@@ -6,6 +6,7 @@ import {say} from "../src/conversation.js";
 import {availableScenes,chooseStoryOption} from "../src/story-engine.js";
 import {runRecoupling,partnerOf,mutuallyAttracted} from "../src/coupling.js";
 import {relationshipBetween} from "../src/relationship-engine.js";
+import {playerJournal} from "../src/journal.js";
 import {activeContestants} from "../src/cast-management.js";
 import {dailyAgenda,contestantLocations} from "../src/villa-schedule.js";
 import {saveSlot,loadSlot,deleteSlot} from "../src/save-slots.js";
@@ -206,8 +207,8 @@ function beachHut(){
 }
 function journal(){
  const w=state.world;
- const recent=w.events.slice(-20).reverse();
- return panel('<h2>Journal</h2><p class="muted">Recorded memories and choices across your season.</p>'+
+ const recent=playerJournal(w,{limit:20});
+ return panel('<h2>Journal</h2><p class="muted">Only events you know about appear here. Undiscovered secrets are hidden.</p>'+
   (recent.length?'<ul>'+recent.map(e=>'<li><strong>Day '+e.day+'</strong>: '+
     esc(personName(e.actor))+' and '+esc(personName(e.target))+' · '+esc(e.type)+'</li>').join("")+'</ul>':
     "<p>There are no recorded events yet.</p>")+
