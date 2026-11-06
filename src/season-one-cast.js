@@ -23,7 +23,7 @@ const CAST=Object.freeze([
   interests:["travel","food","fitness"],dealbreaker:"betrayal",motive:"learn to prioritize connection over winning",
   secret:"is considering leaving a prestigious job that no longer makes him happy",
   backstory:"Mason is polished, disciplined and hard to impress. He values honesty but often turns relationships into negotiations without meaning to.",
-  look:{skinTone:"deep-brown",hairTexture:"short",hairLength:"short",hairColor:"jet-black",bodyType:"muscular"}},
+  look:{skinTone:"deep-brown",hairTexture:"coily",hairLength:"short",hairColor:"jet-black",bodyType:"muscular"}},
  {id:"npc-04",name:"Andre",gender:"man",age:26,hometown:"Atlanta, Georgia",occupation:"Professional trainer",
   orientation:"straight",attractedTo:["woman"],traits:["loyal","outgoing","jealous","empathetic","competitive"],
   interests:["fitness","music","cooking"],dealbreaker:"disrespect",motive:"find someone who embraces his intense, affectionate side",
