@@ -14,6 +14,7 @@ import { gossipAfterInteractions } from "./gossip.js";
 import { generateCast } from "./cast-generator.js";
 import { autoTextPlayer } from "./phone.js";
 import { challengeForDay, runChallenge } from "./challenges.js";
+import { npcRomanceOpportunity } from "./autonomous-romance.js";
 import {
   BOMBSHELL_DAYS, ELIMINATION_DAYS, introduceBombshell,
   suggestedElimination, eliminateContestant
@@ -46,6 +47,7 @@ export function startSeason(player, contestants) {
   world.arrivals = [];
   world.eliminations = [];
   world.challengeResults = [];
+  world.romanceLog = [];
   ensureCouplingState(world);
   return world;
 }
@@ -70,6 +72,7 @@ export function simulateCurrentDay(world) {
   const ids = Object.keys(world.people).filter(id => id !== world.playerId && !world.people[id].eliminated).sort();
   const used = new Set();
   const interactions = [];
+  const romances = [];
 
   for (const actor of ids) {
     if (used.has(actor)) continue;
@@ -93,6 +96,10 @@ export function simulateCurrentDay(world) {
     };
     world.socialLog.push(entry);
     interactions.push(entry);
+    const romance=npcRomanceOpportunity(world,{
+      actor,target,location:locations[actor],action:decision.action
+    });
+    if(romance)romances.push(romance);
   }
 
   const gossip = gossipAfterInteractions(world, interactions);
@@ -102,6 +109,7 @@ export function simulateCurrentDay(world) {
     agenda: dailyAgenda(world),
     locations,
     interactions,
+    romances,
     gossip
   };
 }
