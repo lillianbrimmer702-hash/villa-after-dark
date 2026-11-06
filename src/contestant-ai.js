@@ -4,6 +4,7 @@
  * NPCs cannot use events they have not personally learned.
  */
 import { memoriesOf, relationshipBetween } from "./relationship-engine.js";
+import { knownJealousyEvidence, partnerOf } from "./coupling.js";
 
 export const TRAITS = Object.freeze([
   "loyal", "romantic", "ambitious", "jealous", "outgoing", "shy",
@@ -49,14 +50,15 @@ export function scoreAction(world, actorId, targetId, action) {
   const knownBetrayals = recent(known, "betrayal", 14, world.day);
   const knownArguments = recent(known, "argument", 7, world.day);
   const knownKisses = recent(known, "kiss", 7, world.day);
+  const jealousy = partnerOf(world, actorId) === targetId ? knownJealousyEvidence(world, actorId).length : 0;
   let score = 10;
   for (const trait of traits) score += modifiers[action][trait] || 0;
   switch(action) {
-    case "flirt": score += affection/12 + knownKisses*3 - knownBetrayals*6; break;
-    case "bond": score += trust/15 + affection/25 - knownBetrayals*4; break;
-    case "confront": score += knownBetrayals*10 + knownArguments*4 - trust/30; break;
+    case "flirt": score += affection/12 + knownKisses*3 - knownBetrayals*6 - jealousy*6; break;
+    case "bond": score += trust/15 + affection/25 - knownBetrayals*4 - jealousy*5; break;
+    case "confront": score += knownBetrayals*10 + knownArguments*4 - trust/30 + jealousy*(traits.includes("jealous")?16:9); break;
     case "apologize": score += knownArguments*5 + (trust < 0 ? 2 : 0); break;
-    case "keep_distance": score += -affection/15 + knownBetrayals*5; break;
+    case "keep_distance": score += -affection/15 + knownBetrayals*5 + jealousy*5; break;
   }
   return Math.round(score*100)/100;
 }
