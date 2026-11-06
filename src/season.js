@@ -11,6 +11,11 @@ import { chooseAction } from "./contestant-ai.js";
 import { ensureCouplingState, previewRecoupling, runRecoupling } from "./coupling.js";
 import { generateAppearance, validateAppearance } from "./character-style.js";
 import { gossipAfterInteractions } from "./gossip.js";
+import { generateCast } from "./cast-generator.js";
+import {
+  BOMBSHELL_DAYS, ELIMINATION_DAYS, introduceBombshell,
+  suggestedElimination, eliminateContestant
+} from "./cast-management.js";
 
 const ACTION_EVENTS = Object.freeze({
   bond: "kindness",
@@ -33,6 +38,8 @@ export function startSeason(player, contestants) {
   world.socialLog = [];
   world.simulatedDays = [];
   world.gossipLog = [];
+  world.arrivals = [];
+  world.eliminations = [];
   ensureCouplingState(world);
   return world;
 }
@@ -54,7 +61,7 @@ export function simulateCurrentDay(world) {
   validateSeason(world);
   assert(!world.simulatedDays.includes(world.day), "This day was already simulated");
   const locations = contestantLocations(world);
-  const ids = Object.keys(world.people).filter(id => id !== world.playerId).sort();
+  const ids = Object.keys(world.people).filter(id => id !== world.playerId && !world.people[id].eliminated).sort();
   const used = new Set();
   const interactions = [];
 
@@ -104,8 +111,29 @@ export function completeDay(world, { playerChoice } = {}) {
   const ceremony = hasCeremony && !world.ceremonies?.some(c => c.day === world.day)
     ? runRecoupling(world, { playerChoice })
     : null;
+  let arrival = null;
+  if (BOMBSHELL_DAYS.includes(world.day)) {
+    // Pick a fresh fictional name without duplicating an earlier contestant.
+    const names = new Set(Object.values(world.people).map(person => person.name));
+    let nextPerson = null;
+    for (let variant=0;variant<30;variant++) {
+      const candidate=generateCast("bombshell|" + world.day + "|" + variant,1)[0];
+      if (!names.has(candidate.name)) { nextPerson=candidate; break; }
+    }
+    assert(nextPerson, "No unique bombshell name available");
+    arrival=introduceBombshell(world, {
+      ...nextPerson, id:"bombshell-" + world.day,
+      appearance:generateAppearance("bombshell|" + world.day)
+    });
+  }
+  let elimination = null;
+  if (ELIMINATION_DAYS.includes(world.day)) {
+    const candidate = suggestedElimination(world);
+    if (candidate) elimination=eliminateContestant(world,candidate);
+  }
   if (world.day < world.seasonLength) advanceDay(world);
-  return { ...report, ceremony, nextDay: world.day, seasonComplete: report.day === world.seasonLength };
+  return { ...report, ceremony, arrival, elimination, nextDay: world.day,
+    seasonComplete: report.day === world.seasonLength };
 }
 
 /** What a contestant knows about the current season (not omniscient). */
