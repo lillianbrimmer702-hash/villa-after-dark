@@ -74,6 +74,10 @@ export function eliminateContestant(world,personId,reason="public_vote"){
 }
 export function suggestedElimination(world) {
  assert(ELIMINATION_DAYS.includes(world.day),"No elimination scheduled today");
- const standings=audienceStandings(world).filter(x=>x.personId!==world.playerId);
+ const standings=audienceStandings(world).filter(x=>{
+   if(x.personId===world.playerId)return false;
+   const arrival=world.arrivals?.find(entry=>entry.personId===x.personId);
+   return !arrival || world.day-arrival.day>=7;
+ });
  return standings.at(-1)?.personId??null;
 }
