@@ -51,6 +51,15 @@ export function audienceStandings(world){
   const activeDays=world.day-(world.arrivals?.find(x=>x.personId===id)?.day||1);
   score[id]+=Math.min(10,Math.max(0,activeDays));
  }
+ // Only publicly ranked competitions influence the fictional audience.
+ // Private kisses and unshared secrets remain invisible.
+ for(const challenge of world.challengeResults||[]){
+  if(!challenge.public)continue;
+  challenge.rankings.slice(0,3).forEach((entry,index)=>{
+   if(Object.hasOwn(score,entry.personId))
+     score[entry.personId]+=[12,8,4][index];
+  });
+ }
  return ids.map(id=>({personId:id,score:score[id]}))
    .sort((a,b)=>b.score-a.score||a.personId.localeCompare(b.personId));
 }
