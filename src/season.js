@@ -38,6 +38,7 @@ export function startSeason(player, contestants) {
   world.socialLog = [];
   world.simulatedDays = [];
   world.gossipLog = [];
+  world.storyLog = [];
   world.arrivals = [];
   world.eliminations = [];
   ensureCouplingState(world);
