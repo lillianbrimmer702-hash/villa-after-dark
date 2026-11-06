@@ -322,7 +322,7 @@ function render(){
  try{
   if(!world())body=createCharacter();
   else{
-   const pages={home,cast,explore,talk,wardrobe,events,phone,journal,hut,save:saves};
+   const pages={home,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
    body=(pages[state.tab]||home)();
   }
  }catch(e){
