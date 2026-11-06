@@ -8,6 +8,7 @@
 import { createWorld, recordEvent, memoriesOf, advanceDay } from "./relationship-engine.js";
 import { dailyAgenda, contestantLocations } from "./villa-schedule.js";
 import { chooseAction } from "./contestant-ai.js";
+import { ensureCouplingState, previewRecoupling, runRecoupling } from "./coupling.js";
 
 const ACTION_EVENTS = Object.freeze({
   bond: "kindness",
@@ -24,6 +25,7 @@ export function startSeason(player, contestants) {
   world.playerId = player.id;
   world.socialLog = [];
   world.simulatedDays = [];
+  ensureCouplingState(world);
   return world;
 }
 
@@ -82,10 +84,18 @@ export function simulateCurrentDay(world) {
 }
 
 /** Returns a day report and advances once. Day 90 is the last playable day. */
-export function completeDay(world) {
+export function completeDay(world, { playerChoice } = {}) {
+  validateSeason(world);
+  const hasCeremony = world.day % 14 === 0 && world.day < world.seasonLength;
+  // Reject an invalid explicit choice before simulating anything.
+  if (hasCeremony && !world.ceremonies?.some(c => c.day === world.day))
+    previewRecoupling(world, { playerChoice });
   const report = simulateCurrentDay(world);
+  const ceremony = hasCeremony && !world.ceremonies?.some(c => c.day === world.day)
+    ? runRecoupling(world, { playerChoice })
+    : null;
   if (world.day < world.seasonLength) advanceDay(world);
-  return { ...report, nextDay: world.day, seasonComplete: report.day === world.seasonLength };
+  return { ...report, ceremony, nextDay: world.day, seasonComplete: report.day === world.seasonLength };
 }
 
 /** What a contestant knows about the current season (not omniscient). */
