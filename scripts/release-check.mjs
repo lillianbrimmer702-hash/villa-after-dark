@@ -15,6 +15,12 @@ export function inspectRelease(root){
   if(!existsSync(at(path)))missing.push("Missing "+label+": "+path);
  };
  mustExist("index.html","production game entry page");
+ if(existsSync(at("index.html"))){
+  const entry=readFileSync(at("index.html"),"utf8");
+  // A public internal preview is NOT equivalent to the finished game.
+  if(/Development Preview|Development preview|dev\/|not finished/i.test(entry))
+    missing.push("The production game entry page is still only a development preview");
+ }
  mustExist("assets/manifest.json","illustrated asset manifest");
  mustExist("assets/LICENSES.md","original or licensed art register");
  mustExist("QA_SIGNOFF.json","QA release approval");
