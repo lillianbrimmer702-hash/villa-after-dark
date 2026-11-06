@@ -1,4 +1,5 @@
 import {TRAITS,createPersonality} from "./contestant-ai.js";
+import {generateAppearance} from "./character-style.js";
 
 /** Procedural contestant casting with reproducible variety.
  * Fictional names/backstories; profiles are data, not AI-generated conversations.
@@ -40,6 +41,7 @@ export function generateCast(seed="season-one",count=11){
    return {
      id:"npc-"+String(i+1).padStart(2,"0"),
      name,age,gender,orientation,attractedTo,hometown,occupation,
+     appearance:generateAppearance(String(seed)+"|npc-"+i),
      motive:goal,secret,
      backstory:`${name}, ${age}, is a ${occupation} from ${hometown}. They came to the villa to ${goal}.`,
      personality:createPersonality({
