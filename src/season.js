@@ -12,6 +12,7 @@ import { ensureCouplingState, previewRecoupling, runRecoupling } from "./couplin
 import { generateAppearance, validateAppearance } from "./character-style.js";
 import { gossipAfterInteractions } from "./gossip.js";
 import { generateCast } from "./cast-generator.js";
+import { autoTextPlayer } from "./phone.js";
 import {
   BOMBSHELL_DAYS, ELIMINATION_DAYS, introduceBombshell,
   suggestedElimination, eliminateContestant
@@ -39,6 +40,8 @@ export function startSeason(player, contestants) {
   world.simulatedDays = [];
   world.gossipLog = [];
   world.storyLog = [];
+  world.messages = [];
+  world.confessionals = [];
   world.arrivals = [];
   world.eliminations = [];
   ensureCouplingState(world);
@@ -132,8 +135,9 @@ export function completeDay(world, { playerChoice } = {}) {
     const candidate = suggestedElimination(world);
     if (candidate) elimination=eliminateContestant(world,candidate);
   }
+  const newText = autoTextPlayer(world);
   if (world.day < world.seasonLength) advanceDay(world);
-  return { ...report, ceremony, arrival, elimination, nextDay: world.day,
+  return { ...report, ceremony, arrival, elimination, newText, nextDay: world.day,
     seasonComplete: report.day === world.seasonLength };
 }
 
