@@ -48,10 +48,18 @@ function desire(world, a, b) {
   const interestsA = own.personality?.interests || [];
   const interestsB = other.personality?.interests || [];
   const shared = interestsA.filter(x => interestsB.includes(x)).length;
-  const knownBetrayals = memoriesOf(world, a, b).filter(e => e.type === "betrayal").length;
+  const known = memoriesOf(world, a, b);
+  const knownBetrayals = known.filter(e => e.type === "betrayal").length;
+  // A couple does not lose trust over an affair neither partner discovered.
+  const knownOutsideRomance = known.filter(e =>
+    (e.type === "kiss" || e.type === "date") &&
+    [e.actor,e.target].includes(b) && ![e.actor,e.target].includes(a)
+  ).length;
   const loyal = own.personality?.traits?.includes("loyal") ? 8 : 0;
   return r.affection * .6 + r.trust * .4 + shared * 3 +
-    (partnerOf(world, a) === b ? loyal + 6 : 0) - knownBetrayals * 12;
+    (partnerOf(world, a) === b ? loyal + 6 : 0) -
+    knownBetrayals * 12 -
+    knownOutsideRomance * (own.personality?.traits?.includes("jealous") ? 18 : 10);
 }
 export function pairScore(world, a, b) {
   if (!mutuallyAttracted(world, a, b)) return -Infinity;
