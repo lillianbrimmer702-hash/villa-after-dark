@@ -12,6 +12,14 @@ const INTERESTS=["music","travel","food","fitness","reading","art","hiking","fas
 const DEALBREAKERS=["betrayal","argument","dishonesty","disrespect"];
 const ORIENTATIONS=["straight","bisexual","pansexual","gay"];
 const GENDERS=["woman","man","nonbinary"];
+function attractionFor(gender,orientation){
+  if(orientation==="bisexual"||orientation==="pansexual") return [...GENDERS];
+  if(gender==="woman")return [orientation==="gay"?"woman":"man"];
+  if(gender==="man")return [orientation==="gay"?"man":"woman"];
+  // Nonbinary attraction varies individually; avoid assuming binary labels
+  // describe everyone's experiences the same way.
+  return orientation==="gay"?["nonbinary"]:["woman","man"];
+}
 const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
 function prng(seed){let h=2166136261;for(const c of String(seed)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return()=>{h+=0x6D2B79F5;let t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296};}
 function sample(array,r){return array[Math.floor(r()*array.length)];}
@@ -23,6 +31,7 @@ export function generateCast(seed="season-one",count=11){
  return names.map((name,i)=>{
    const gender=GENDERS[i%GENDERS.length];
    const orientation=ORIENTATIONS[(i+Math.floor(r()*ORIENTATIONS.length))%ORIENTATIONS.length];
+   const attractedTo=attractionFor(gender,orientation);
    const age=21+Math.floor(r()*15);
    const hometown=sample(HOMETOWNS,r);
    const occupation=sample(JOBS,r);
@@ -30,7 +39,7 @@ export function generateCast(seed="season-one",count=11){
    const secret=sample(SECRETS,r);
    return {
      id:"npc-"+String(i+1).padStart(2,"0"),
-     name,age,gender,orientation,hometown,occupation,
+     name,age,gender,orientation,attractedTo,hometown,occupation,
      motive:goal,secret,
      backstory:`${name}, ${age}, is a ${occupation} from ${hometown}. They came to the villa to ${goal}.`,
      personality:createPersonality({
