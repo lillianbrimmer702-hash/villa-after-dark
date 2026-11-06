@@ -10,6 +10,7 @@ import { dailyAgenda, contestantLocations } from "./villa-schedule.js";
 import { chooseAction } from "./contestant-ai.js";
 import { ensureCouplingState, previewRecoupling, runRecoupling } from "./coupling.js";
 import { generateAppearance, validateAppearance } from "./character-style.js";
+import { gossipAfterInteractions } from "./gossip.js";
 
 const ACTION_EVENTS = Object.freeze({
   bond: "kindness",
@@ -31,6 +32,7 @@ export function startSeason(player, contestants) {
   world.playerId = player.id;
   world.socialLog = [];
   world.simulatedDays = [];
+  world.gossipLog = [];
   ensureCouplingState(world);
   return world;
 }
@@ -80,12 +82,14 @@ export function simulateCurrentDay(world) {
     interactions.push(entry);
   }
 
+  const gossip = gossipAfterInteractions(world, interactions);
   world.simulatedDays.push(world.day);
   return {
     day: world.day,
     agenda: dailyAgenda(world),
     locations,
-    interactions
+    interactions,
+    gossip
   };
 }
 
