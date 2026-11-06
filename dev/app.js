@@ -9,6 +9,7 @@ import {relationshipBetween} from "../src/relationship-engine.js";
 import {playerJournal} from "../src/journal.js";
 import {activeContestants} from "../src/cast-management.js";
 import {dailyAgenda,contestantLocations} from "../src/villa-schedule.js";
+import {challengeForDay} from "../src/challenges.js";
 import {saveSlot,loadSlot,deleteSlot} from "../src/save-slots.js";
 import {resolveFinale,reunionSummary} from "../src/finale.js";
 import {sendMessage,inboxFor} from "../src/phone.js";
@@ -16,7 +17,7 @@ import {availableConfessionals,recordConfessional,airConfessional,playerConfessi
 
 const root=document.getElementById("app");
 const state={world:null,tab:"villa",selectedNPC:null,dialogue:null,feedback:"",
-  lastReport:null,playerChoice:undefined};
+  lastReport:null,playerChoice:undefined,challengeApproach:null};
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 })[c]);
@@ -97,6 +98,20 @@ function pairingControl(){
   choices.map(id=>'<option value="'+esc(id)+'" '+(state.playerChoice===id?"selected":"")+'>'+esc(personName(id))+'</option>').join("")+'</select></div>'+
   (world.day===1?button("first-coupling","Hold first pairing","class='primary'"):"<p class='small muted'>This ceremony will take place when you advance the day.</p>"));
 }
+function challengeControls(){
+ const plan=challengeForDay(state.world.day);
+ if(!plan)return "";
+ return panel('<p class="eyebrow">Today’s challenge</p><h3>'+esc(plan.title)+'</h3>'+
+   '<p class="muted small">'+esc(plan.intro)+'</p>'+
+   '<p class="muted small">You choose whether to participate. The other contestants compete independently, and placements affect the fictional audience vote.</p>'+
+   '<div class="field"><label for="challenge-strategy">Your approach</label>'+
+   '<select id="challenge-strategy"><option value="skip" '+
+      (state.challengeApproach===null?'selected':'')+'>Sit this one out</option>'+
+   plan.strategies.map(x=>'<option value="'+esc(x.id)+'" '+
+     (state.challengeApproach===x.id?'selected':'')+'>'+esc(x.label)+'</option>').join("")+
+   '</select></div>');
+}
+
 function villa(){
  const world=state.world;
  const schedule=dailyAgenda(world);
@@ -111,9 +126,11 @@ function villa(){
    (report?'<div class="highlight">Previous day: '+report.interactions.length+' NPC interactions'+
     (report.ceremony?", recoupling held":"")+
     (report.arrival?", new bombshell arrived":"")+
-    (report.elimination?", elimination occurred":"")+'.</div>':"")+
+    (report.elimination?", elimination occurred":"")+
+    (report.challenge?", challenge completed":"")+'.</div>':"")+
    '<div class="button-row">'+button("advance","Complete this day","class='primary'")+'</div>'),
   pairingControl(),
+  challengeControls(),
   panel('<h3>Contestants around the villa</h3><p class="muted small">Developer location simulation; these are not the final scenes.</p>'+
    Object.entries(placeCount).map(([place,n])=>'<div class="statline"><span>'+esc(place.replaceAll("_"," "))+
     '</span><strong>'+n+'</strong></div>').join(""))
@@ -256,7 +273,7 @@ function newSeason(form){
    traits,attractedTo:wants,appearance:createAppearance()});
  const cast=generateCast("developer-"+Date.now());
  state.world=startSeason(player,cast);
- state.tab="villa";state.selectedNPC=null;state.lastReport=null;state.dialogue=null;
+ state.tab="villa";state.selectedNPC=null;state.lastReport=null;state.dialogue=null;state.challengeApproach=null;
  state.feedback="Development season created. Autosave is enabled.";
  persist();render();
 }
@@ -288,6 +305,7 @@ root.addEventListener("submit",event=>{
 });
 root.addEventListener("change",event=>{
  if(event.target.id==="npc-select"){state.selectedNPC=event.target.value;state.dialogue=null;render();}
+ if(event.target.id==="challenge-strategy")state.challengeApproach=event.target.value==="skip"?null:event.target.value;
  if(event.target.id==="partner-choice"){
   const choice=event.target.value;
   state.playerChoice=choice==="keep"?undefined:choice==="single"?null:choice;
@@ -309,8 +327,9 @@ root.addEventListener("click",event=>{
    case "advance":{
      if(world.simulatedDays.includes(90))throw Error("Season already completed.");
      const choice=state.playerChoice;
-     state.lastReport=completeDay(world,choice===undefined?{}:{playerChoice:choice});
+     state.lastReport=completeDay(world,{playerChoice:choice,challengeApproach:state.challengeApproach});
      state.playerChoice=undefined;
+     state.challengeApproach=null;
      state.feedback="Completed day "+state.lastReport.day+".";
      break;
    }
@@ -323,7 +342,7 @@ root.addEventListener("click",event=>{
      if(!confirm("Start a new developer season? This overwrites the autosave."))return;
      try{deleteSlot(localStorage,"autosave");}catch{};
      state.world=null;state.tab="villa";state.selectedNPC=null;
-     state.lastReport=null;state.dialogue=null;state.feedback="";break;
+     state.lastReport=null;state.dialogue=null;state.challengeApproach=null;state.feedback="";break;
    case "air-confessional":
      airConfessional(world,target.dataset.id);state.feedback="Confessional aired to the fictional audience.";break;
    case "resolve-finale":resolveFinale(world);state.feedback="Finale state recorded.";break;
