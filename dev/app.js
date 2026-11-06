@@ -8,7 +8,7 @@ import {runRecoupling,partnerOf,mutuallyAttracted} from "../src/coupling.js";
 import {relationshipBetween} from "../src/relationship-engine.js";
 import {activeContestants} from "../src/cast-management.js";
 import {dailyAgenda,contestantLocations} from "../src/villa-schedule.js";
-import {saveSlot,loadSlot} from "../src/save-slots.js";
+import {saveSlot,loadSlot,deleteSlot} from "../src/save-slots.js";
 import {resolveFinale,reunionSummary} from "../src/finale.js";
 
 const root=document.getElementById("app");
@@ -90,8 +90,8 @@ function pairingControl(){
  return panel('<h3>'+ (world.day===1?"First pairing":"Recoupling ceremony")+'</h3>'+
   '<p class="small muted">Only the player chooses the player’s partner. Leaving the selection unchanged keeps the current partner, if any.</p>'+
   '<div class="field"><label for="partner-choice">Your choice</label><select id="partner-choice">'+
-  '<option value="keep">Keep current partner / remain single</option><option value="single">Choose to be single</option>'+
-  choices.map(id=>'<option value="'+esc(id)+'">'+esc(personName(id))+'</option>').join("")+'</select></div>'+
+  '<option value="keep" '+(state.playerChoice===undefined?"selected":"")+'>Keep current partner / remain single</option><option value="single" '+(state.playerChoice===null?"selected":"")+'>Choose to be single</option>'+
+  choices.map(id=>'<option value="'+esc(id)+'" '+(state.playerChoice===id?"selected":"")+'>'+esc(personName(id))+'</option>').join("")+'</select></div>'+
   (world.day===1?button("first-coupling","Hold first pairing","class='primary'"):"<p class='small muted'>This ceremony will take place when you advance the day.</p>"));
 }
 function villa(){
@@ -272,6 +272,7 @@ root.addEventListener("click",event=>{
    case "save":persist();state.feedback="Checkpoint saved.";break;
    case "reset":
      if(!confirm("Start a new developer season? This overwrites the autosave."))return;
+     try{deleteSlot(localStorage,"autosave");}catch{};
      state.world=null;state.tab="villa";state.selectedNPC=null;
      state.lastReport=null;state.dialogue=null;state.feedback="";break;
    case "resolve-finale":resolveFinale(world);state.feedback="Finale state recorded.";break;
