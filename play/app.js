@@ -271,7 +271,7 @@ function phone(){
  return chrome('<div class="sectionhead"><h2>Villa Phone</h2></div>'+
   '<div class="layout-2"><div class="stack">'+panel('<div class="eyebrow">Private messages</div>'+
   (messages.length?messages.map(m=>'<div class="message '+(m.from===w.playerId?"out":"in")+'">'+
-   '<div class="small muted">Day '+m.day+' · '+esc(name(m.from))+'</div><p>'+esc(m.text)+'</p></div>').join("")+
+   '<div class="small muted">Day '+m.day+' · '+esc(name(m.from))+'</div><p>'+esc(m.text)+'</p></div>').join(""):
    '<p class="muted">No messages yet. Islanders will reach out during the season.</p>')+
   '</div><div class="stack">'+panel('<h3>Write a message</h3><form id="phone-form">'+
   '<div class="input"><label for="recipient">To</label><select id="recipient" name="recipient">'+
