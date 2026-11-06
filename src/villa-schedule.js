@@ -1,5 +1,6 @@
 import {advanceDay,recordEvent} from "./relationship-engine.js";
 import {chooseAction} from "./contestant-ai.js";
+import {ELIMINATION_DAYS} from "./cast-management.js";
 
 /** Deterministic villa schedule. The player controls when each day advances.
  * This schedules opportunities, not automatic romantic consent or forced events.
@@ -18,12 +19,13 @@ export function dailyAgenda(world,day=world.day){
  if(day>1&&day%14===0&&day<90)events.push({time:"22:00",type:"recoupling",location:"firepit",title:"Recoupling ceremony"});
  if(day>3&&day%9===0&&day<90)events.push({time:"16:00",type:"challenge",location:"garden",title:"Villa challenge"});
  if(day>7&&day%11===0&&day<85)events.push({time:"18:00",type:"bombshell",location:"pool",title:"New arrival"});
+ if(ELIMINATION_DAYS.includes(day))events.push({time:"22:30",type:"elimination",location:"firepit",title:"Public vote result"});
  if(day===90)events.push({time:"22:00",type:"finale",location:"firepit",title:"Finale and reunion"});
  return {day,phase,events:events.sort((a,b)=>a.time.localeCompare(b.time))};
 }
 export function contestantLocations(world,day=world.day) {
  const result={};
- for(const id of Object.keys(world.people))
+ for(const id of Object.keys(world.people).filter(id=>!world.people[id].eliminated))
    result[id]=pick(LOCATIONS.slice(0,8),id+"|"+day);
  return result;
 }
