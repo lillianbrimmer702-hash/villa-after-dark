@@ -9,6 +9,7 @@ import { createWorld, recordEvent, memoriesOf, advanceDay } from "./relationship
 import { dailyAgenda, contestantLocations } from "./villa-schedule.js";
 import { chooseAction } from "./contestant-ai.js";
 import { ensureCouplingState, previewRecoupling, runRecoupling } from "./coupling.js";
+import { generateAppearance, validateAppearance } from "./character-style.js";
 
 const ACTION_EVENTS = Object.freeze({
   bond: "kindness",
@@ -21,7 +22,12 @@ export function startSeason(player, contestants) {
   assert(player && typeof player.id === "string", "Player needs an id");
   assert(Array.isArray(contestants) && contestants.length === 11, "Season needs exactly 11 starting NPCs");
   assert(!contestants.some(p => p.id === player.id), "Player cannot also be an NPC");
-  const world = createWorld([{ ...player, isPlayer: true }, ...contestants.map(p => ({ ...p, isPlayer: false }))], 90);
+  const normalize = (person, isPlayer) => {
+    const appearance = person.appearance || generateAppearance("cast|" + person.id);
+    validateAppearance(appearance);
+    return { ...person, appearance, isPlayer };
+  };
+  const world = createWorld([normalize(player, true), ...contestants.map(p => normalize(p, false))], 90);
   world.playerId = player.id;
   world.socialLog = [];
   world.simulatedDays = [];
