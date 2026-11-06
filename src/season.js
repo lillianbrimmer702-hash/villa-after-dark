@@ -13,6 +13,7 @@ import { generateAppearance, validateAppearance } from "./character-style.js";
 import { gossipAfterInteractions } from "./gossip.js";
 import { generateCast } from "./cast-generator.js";
 import { autoTextPlayer } from "./phone.js";
+import { challengeForDay, runChallenge } from "./challenges.js";
 import {
   BOMBSHELL_DAYS, ELIMINATION_DAYS, introduceBombshell,
   suggestedElimination, eliminateContestant
@@ -44,6 +45,7 @@ export function startSeason(player, contestants) {
   world.confessionals = [];
   world.arrivals = [];
   world.eliminations = [];
+  world.challengeResults = [];
   ensureCouplingState(world);
   return world;
 }
@@ -105,13 +107,19 @@ export function simulateCurrentDay(world) {
 }
 
 /** Returns a day report and advances once. Day 90 is the last playable day. */
-export function completeDay(world, { playerChoice } = {}) {
+export function completeDay(world, { playerChoice, challengeApproach } = {}) {
   validateSeason(world);
+  const challengePlan = challengeForDay(world.day);
+  // Validate the player choice BEFORE any daily state changes.
+  if(challengeApproach !== undefined && challengeApproach !== null &&
+     (!challengePlan || !challengePlan.strategies.some(s=>s.id===challengeApproach)))
+    throw new Error("Invalid player challenge choice");
   const hasCeremony = world.day % 14 === 0 && world.day < world.seasonLength;
   // Reject an invalid explicit choice before simulating anything.
   if (hasCeremony && !world.ceremonies?.some(c => c.day === world.day))
     previewRecoupling(world, { playerChoice });
   const report = simulateCurrentDay(world);
+  const challenge = challengePlan ? runChallenge(world,{approach:challengeApproach??null}) : null;
   const ceremony = hasCeremony && !world.ceremonies?.some(c => c.day === world.day)
     ? runRecoupling(world, { playerChoice })
     : null;
@@ -137,7 +145,7 @@ export function completeDay(world, { playerChoice } = {}) {
   }
   const newText = autoTextPlayer(world);
   if (world.day < world.seasonLength) advanceDay(world);
-  return { ...report, ceremony, arrival, elimination, newText, nextDay: world.day,
+  return { ...report, challenge, ceremony, arrival, elimination, newText, nextDay: world.day,
     seasonComplete: report.day === world.seasonLength };
 }
 
