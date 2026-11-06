@@ -10,6 +10,8 @@ import {activeContestants} from "../src/cast-management.js";
 import {dailyAgenda,contestantLocations} from "../src/villa-schedule.js";
 import {saveSlot,loadSlot,deleteSlot} from "../src/save-slots.js";
 import {resolveFinale,reunionSummary} from "../src/finale.js";
+import {sendMessage,inboxFor} from "../src/phone.js";
+import {availableConfessionals,recordConfessional,airConfessional,playerConfessionals} from "../src/beach-hut.js";
 
 const root=document.getElementById("app");
 const state={world:null,tab:"villa",selectedNPC:null,dialogue:null,feedback:"",
@@ -63,8 +65,8 @@ function top(){
   return heading+notice;
 }
 function nav(){
- const names=[["villa","Villa"],["talk","Conversations"],["cast","Cast"],["profile","Profile"],
-   ["journal","Journal"],["finale","Finale"]];
+ const names=[["villa","Villa"],["talk","Conversations"],["cast","Cast"],["phone","Phone"],
+   ["beachHut","Beach Hut"],["profile","Profile"],["journal","Journal"],["finale","Finale"]];
  return '<nav class="nav" aria-label="Development sections">'+names.map(([key,label])=>
    '<button data-action="tab" data-tab="'+key+'" class="'+(state.tab===key?"active":"")+
    '" aria-current="'+(state.tab===key?"page":"false")+'">'+label+'</button>').join("")+'</nav>';
@@ -168,6 +170,40 @@ function profile(){
   '<p class="small muted">Appearance data: '+Object.entries(p.appearance.features).map(([k,v])=>esc(k)+": "+esc(v)).join(" · ")+'</p>'+
   '<p class="small muted">Current wardrobe data: '+Object.values(p.appearance.outfit).filter(Boolean).map(esc).join(", ")+'</p>');
 }
+function phone(){
+ const w=state.world;
+ const messages=inboxFor(w,w.playerId).slice(-30).reverse();
+ return panel('<h2>Villa Phone</h2><p class="muted small">Only messages sent to or from you are displayed here.</p>'+
+  '<form id="phone-form"><div class="field"><label for="text-recipient">Text a contestant</label>'+
+  '<select name="to" id="text-recipient">'+activeNpcIds().map(id=>
+   '<option value="'+esc(id)+'">'+esc(personName(id))+'</option>').join("")+'</select></div>'+
+  '<div class="field"><label for="phone-text">Your message</label>'+
+  '<textarea id="phone-text" name="message" required maxlength="600"></textarea></div>'+
+  '<button class="primary" type="submit">Send text</button></form><hr class="divider">'+
+  '<h3>Recent messages</h3>'+
+  (messages.length?messages.map(m=>'<div class="transcript"><p class="chip">Day '+m.day+
+    ' · '+esc(personName(m.from))+' to '+esc(personName(m.to))+'</p><p>'+esc(m.text)+'</p></div>').join(""):
+    '<p class="muted">No messages yet.</p>'));
+}
+function beachHut(){
+ const w=state.world,options=availableConfessionals(w),past=playerConfessionals(w);
+ return panel('<h2>Beach Hut</h2><p class="muted">These are private reflections. Only you can choose to air one to the fictional audience.</p>'+
+  (options.length?'<form id="confessional-form">'+
+    '<div class="field"><label for="confessional-prompt">Prompt</label>'+
+    '<select id="confessional-prompt" name="promptId">'+options.map(p=>
+      '<option value="'+esc(p.id)+'">'+esc(p.prompt)+'</option>').join("")+'</select></div>'+
+    '<div class="field"><label for="confessional-text">Your confession</label>'+
+    '<textarea id="confessional-text" name="text" required maxlength="2000"></textarea></div>'+
+    '<button class="primary" type="submit">Record private confessional</button></form>':
+    '<p class="muted">No new prompts are available today.</p>')+
+  '<hr class="divider"><h3>Recorded confessionals</h3>'+
+  (past.length?past.slice().reverse().map(item=>
+    '<div class="scene"><p class="chip">Day '+item.day+' · '+(item.aired?"Aired":"Private")+'</p>'+
+    '<p>'+esc(item.text)+'</p>'+
+    (item.aired?"":button("air-confessional","Air to fictional audience",
+      "data-id='"+esc(item.id)+"'"))+'</div>').join(""):
+    '<p class="muted">Nothing recorded yet.</p>'));
+}
 function journal(){
  const w=state.world;
  const recent=w.events.slice(-20).reverse();
@@ -197,7 +233,7 @@ function render(){
  let content;
  if(!world)content=intro();
  else{
-  const tabs={villa,talk,cast,profile,journal,finale};
+  const tabs={villa,talk,cast,phone,beachHut,profile,journal,finale};
   content='<div class="grid"><div class="stack">'+(tabs[state.tab]||villa)()+
     '</div><aside class="stack">'+playerMini()+
     panel('<h3>Developer controls</h3>'+
@@ -227,6 +263,18 @@ root.addEventListener("submit",event=>{
   event.preventDefault();
   try{
    if(event.target.id==="player-form")newSeason(event.target);
+   if(event.target.id==="phone-form"&&state.world){
+    const data=new FormData(event.target);
+    sendMessage(state.world,{from:state.world.playerId,to:String(data.get("to")||""),
+      text:String(data.get("message")||"")});
+    state.feedback="Text sent and saved.";persist();render();
+   }
+   if(event.target.id==="confessional-form"&&state.world){
+    const data=new FormData(event.target);
+    recordConfessional(state.world,{promptId:String(data.get("promptId")||""),
+      text:String(data.get("text")||"")});
+    state.feedback="Private Beach Hut confessional saved.";persist();render();
+   }
    if(event.target.id==="talk-form"&&state.world){
     const id=selectedNPC();
     const text=String(new FormData(event.target).get("message")||"");
@@ -275,6 +323,8 @@ root.addEventListener("click",event=>{
      try{deleteSlot(localStorage,"autosave");}catch{};
      state.world=null;state.tab="villa";state.selectedNPC=null;
      state.lastReport=null;state.dialogue=null;state.feedback="";break;
+   case "air-confessional":
+     airConfessional(world,target.dataset.id);state.feedback="Confessional aired to the fictional audience.";break;
    case "resolve-finale":resolveFinale(world);state.feedback="Finale state recorded.";break;
   }
   persist();render();
