@@ -20,9 +20,10 @@ function pairs(world){
  return out.sort((a,b)=>a[0].localeCompare(b[0]));
 }
 function coupleScore(world,a,b,popularity){
- const relationship=relationshipBetween(world,a,b);
- return Math.round((50+relationship.affection*.5+relationship.trust*.5+
-   ((popularity[a]||0)+(popularity[b]||0))*.75)*100)/100;
+ // The fictional public cannot vote on private trust scores or hidden dates.
+ // Ranking is based only on public ceremony visibility; private history
+ // influences the couple's personal ending, not the fictional vote tally.
+ return Math.round((50+((popularity[a]||0)+(popularity[b]||0))*.75)*100)/100;
 }
 export function previewFinale(world) {
  assert(world.day===90 && world.simulatedDays?.includes(90),"Finish all 90 days before the finale");
