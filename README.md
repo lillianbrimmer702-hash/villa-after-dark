@@ -17,14 +17,14 @@ See [GAME_BLUEPRINT.md](GAME_BLUEPRINT.md) for requirements and [ART_DIRECTION.m
 | Five-trait personalities | Implemented personality profiles and deterministic NPC action scoring |
 | Gossip / jealousy | Implemented private knowledge propagation and jealousy-driven action scoring |
 | Couples / ceremonies | Implemented mutual-attraction pairing, public recoupling and single contestants |
-| Full 90-day season | Day progression and scheduled NPC activities, bombshell arrivals, fictional votes and eliminations; still needs story content |
+| Full 90-day season | Day progression, scheduled activities and nine challenges, bombshell arrivals, fictional votes and eliminations; still needs substantial story content |
 | Cast generation | Seeded profiles for eleven distinct adults; appearance data for the same visual pipeline as the player |
-| Character visual art | **Not finished**; visual-profile contract exists but image assets and actual live customization must be built |
+| Character visual art | **Not finished**; strict shared portrait/full-body compositing renderer exists, but all actual realistic artwork and matching wardrobe layers still must be produced |
 | Fashion | 60 free wardrobe item *descriptions and outfit slots*; corresponding illustrations still to be produced |
-| Villa scenes / UI | **Not finished**; final visual and navigational integration outstanding |
-| Saves | Versioned world serialization and browser save slots |
+| Villa scenes / UI | **Not finished**; internal text-only integration interface under `dev/`, not the finished game |
+| Phone / Beach Hut | Private text messages, autonomous NPC outreach, private and optionally aired confessional entries |\n| Authored scenes | 16 branching scenes with replay protection and saved consequences; many more scenes needed |\n| Saves | Versioned world serialization and browser save slots |
 | Finale / reunion / endings | **Not implemented as interactive outcomes** |
-| Automated tests | Node test suite in `tests/`; GitHub Actions runs `npm test` on each commit |
+| Automated tests | Node test suite in `tests/`; GitHub Actions runs `npm test` on each commit. A separate release gate intentionally fails until the game is complete |
 
 ### Run logic tests
 
@@ -35,6 +35,14 @@ npm test
 ```
 
 The final player-facing game will run directly in a browser without requiring Node.js or any installation.
+
+### Release readiness (not a gameplay build)
+
+```bash
+npm run release:check
+```
+
+This separate release check is **expected to fail while development is incomplete**. It checks for the final production page, original art assets and licenses, actual illustrated wardrobe items, adequate story breadth, and manual QA on the target laptop. Passing `npm test` means the implemented mechanics passed their tests; it is not permission to release the game. The private development interface in `dev/` does not count as the finished product.
 
 ## Project structure
 
@@ -48,7 +56,7 @@ The final player-facing game will run directly in a browser without requiring No
 - `src/gossip.js` — controlled disclosure of private information.
 - `src/cast-management.js` — bombshell arrivals and eliminations.
 - `src/character-style.js` — shared appearance options, wardrobe data and art-manifest validation.
-- `src/save-slots.js` — persistence helpers.
+- `src/save-slots.js` — persistence helpers.\n- `src/player-profile.js` — character creator validation.\n- `src/story-engine.js` — authored branch scenes.\n- `src/phone.js` and `src/beach-hut.js` — private messages and confessions.\n- `src/challenges.js` — public villa challenges.\n- `src/art-renderer.js` — shared image-layer composition requiring actual real artwork.\n- `dev/` — non-release development interface.\n- `scripts/release-check.mjs` — independent release gate.
 - `tests/` — repeatable tests, including complete 90-day progression.
 
 ## Rules of development
