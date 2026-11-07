@@ -1,6 +1,7 @@
 import {createPlayerProfile,updatePlayerAppearance} from "../src/player-profile.js";
 import {createAppearance,APPEARANCE_OPTIONS,GARMENTS,changeFeature,equip,saveLook} from "../src/character-style.js";
 import {createSeasonOneCast,STARTING_ROSTER} from "../src/season-one-cast.js";
+import {entranceState,continueEntrance,chooseFirstImpression,finishEntrance,FIRST_IMPRESSION_CHOICES} from "../src/arrival.js";
 import {PHOTO_OUTFITS,choosePhotoOutfit,currentPhotoOutfit} from "../src/avatar-art.js";
 import {startSeason,completeDay} from "../src/season.js";
 import {say,suggestedReplies} from "../src/conversation.js";
@@ -28,7 +29,7 @@ const places=[
  {id:"spa",name:"Wellness Studio",image:4,note:"An escape from the drama"},
  {id:"beach",name:"Beach",image:5,note:"A quieter place"}
 ];
-const navItems=[["home","⌂","Villa"],["cast","♧","Islanders"],["explore","⌖","Explore"],["talk","♡","Talk"],["wardrobe","✧","Wardrobe"],
+const navItems=[["home","⌂","Villa"],["arrival","♡","First Night"],["cast","♧","Islanders"],["explore","⌖","Explore"],["talk","♡","Talk"],["wardrobe","✧","Wardrobe"],
  ["events","◇","Events"],["phone","✉","Phone"],["journal","◫","Journal"],["hut","◉","Beach Hut"],["save","▣","Save / Load"]];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=(tag,content,attrs="")=>"<"+tag+" "+attrs+">"+content+"</"+tag+">";
@@ -160,7 +161,7 @@ function home(){
       "Eleven strangers are waiting. Your first move could change everything.":
       "The couples are shifting, the villa is talking, and your next choice is yours.")+
   '</p><div class="actions">'+
-   btn("nav","Walk around the villa",'data-tab="explore"',true)+
+   btn("nav",isFirst&&entranceState(w).phase==="arrival"?"Begin your first night":"Walk around the villa",isFirst&&entranceState(w).phase==="arrival"?'data-tab="arrival"':'data-tab="explore"',true)+
    btn("nav","Find someone to talk to",'data-tab="talk"')+
    '</div><p class="small dim" style="margin-top:14px">Your story starts with the people you meet, not a checklist.</p></div>'+
   '<div class="home-avatar" aria-label="Preview model wearing your selected illustrated outfit">'+
@@ -181,6 +182,80 @@ function home(){
   '<div class="quick-locations">'+places.map(locationTile).join("")+'</div>'
  );
 }
+
+/** The opening is a real playable first-night vignette, not a static image.
+ * Choices are stored in the same world as the rest of the season.
+ */
+function arrival(){
+ const w=world(),entry=entranceState(w);
+ const outfit=currentPhotoOutfit(w);
+ const selected=active().includes(state.npc)?state.npc:active()[0];
+ const other=person(selected);
+ const stage='<div class="arrival-background" aria-hidden="true"></div>'+
+   '<div class="scene-label">Day One · Welcome to the villa</div>';
+ if(entry.phase==="arrival"){
+  return chrome(
+   '<section class="arrival-stage scene-shell">'+stage+
+    '<div class="arrival-hero"><div class="arrival-copy">'+
+     '<div class="eyebrow">Season One · Opening Night</div>'+
+     '<h1>Eleven strangers.<br>One unforgettable summer.</h1>'+
+     '<p>The villa lights glow against the ocean. You step through the entrance and hear the other islanders laughing beside the pool. All eyes turn your way.</p>'+
+     '<div class="actions">'+btn("arrival-continue","Make your entrance","",true)+
+     btn("nav","Get dressed first",'data-tab="wardrobe"')+'</div></div>'+
+    fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
+    '</div></section>'+
+    '<div class="arrival-bottom"><div class="eyebrow">Tonight’s first decision</div>'+
+    '<h2>Who will you make your first impression on?</h2>'+
+    '<div class="islander-strip">'+active().map(id=>castCard(id)).join("")+'</div></div>'
+  );
+ }
+ if(entry.phase==="first-impression"){
+  return chrome(
+   '<section class="arrival-stage scene-shell">'+stage+
+    '<div class="arrival-hero arrival-intro">'+
+     '<div class="arrival-copy"><div class="eyebrow">The first introductions</div>'+
+      '<h1>Someone catches your eye.</h1>'+
+      '<p>You can approach anyone. There is no automatic kiss, date, or pairing—the first move is entirely yours.</p>'+
+      '<div class="arrival-intro-dialogue"><span class="small muted">You turn toward</span>'+
+      '<h2>'+esc(other.name)+'</h2>'+
+      '<p class="muted">'+esc(other.age)+' · '+esc(other.occupation)+
+      ' · '+esc(other.hometown)+'</p>'+
+      '<p>'+esc(other.backstory)+'</p></div></div>'+
+      '<div class="arrival-split-portraits">'+
+       fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
+       portrait(selected,"arrival-npc-art")+'</div>'+
+    '</div></section>'+
+    '<div class="arrival-bottom"><div class="eyebrow">Approach an islander</div>'+
+    '<div class="arrival-dock">'+active().map(id=>
+       '<button class="arrival-contact '+(id===selected?'selected':'')+'" '+
+        'data-action="arrival-select" data-npc="'+esc(id)+'" '+
+        'aria-pressed="'+(id===selected)+'">'+portrait(id)+
+        '<span>'+esc(name(id))+'</span></button>'
+    ).join("")+'</div>'+
+    '<div class="eyebrow">What do you say to '+esc(other.name)+'?</div>'+
+    '<div class="arrival-options">'+FIRST_IMPRESSION_CHOICES.map(o=>
+      btn("arrival-choice",o.label,'data-choice="'+esc(o.id)+'"',o.id==="friendly")
+    ).join("")+'</div></div>'
+  );
+ }
+ const subject=person(entry.targetId);
+ return chrome(
+  '<section class="arrival-stage scene-shell">'+stage+
+    '<div class="arrival-hero arrival-intro">'+
+     '<div class="arrival-copy"><div class="eyebrow">'+(entry.completed?"Your first night":"A moment to remember")+'</div>'+
+      '<h1>'+esc(subject.name)+' smiles back.</h1>'+
+      '<div class="arrival-intro-dialogue"><h2>'+esc(subject.name)+'</h2><p>'+esc(entry.response)+'</p>'+
+      '<p class="muted small">Your first impression has been remembered. What happens next is up to you.</p></div>'+
+      '<div class="actions">'+
+      (entry.completed?btn("nav","Explore the villa",'data-tab="explore"',true):
+       btn("arrival-finish","Step into the villa","",true))+
+      '</div></div><div class="arrival-split-portraits">'+
+        fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
+        portrait(entry.targetId,"arrival-npc-art")+
+      '</div></div></section>'
+ );
+}
+
 function cast(){
  const ids=Object.keys(world().people).filter(id=>id!==world().playerId);
  const men=ids.filter(id=>person(id).gender==="man");
@@ -388,7 +463,7 @@ function render(){
  try{
   if(!world())body=createCharacter();
   else{
-   const pages={home,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
+   const pages={home,arrival,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
    body=(pages[state.tab]||home)();
   }
  }catch(e){
@@ -493,6 +568,21 @@ root.addEventListener("click",e=>{
    persist();render();return;
   }
   const w=world();
+  if(action==="arrival-select"){
+   if(entranceState(w).phase!=="first-impression")throw Error("Finish arriving before approaching anyone");
+   if(!active().includes(target.dataset.npc))throw Error("That islander is not here");
+   state.npc=target.dataset.npc;state.feedback="";render();return;
+  }
+  if(action==="arrival-continue"){
+   continueEntrance(w);state.feedback="";persist();render();return;
+  }
+  if(action==="arrival-choice"){
+   chooseFirstImpression(w,{targetId:state.npc,choiceId:target.dataset.choice});
+   state.feedback="";persist();render();return;
+  }
+  if(action==="arrival-finish"){
+   finishEntrance(w);state.feedback="";persist();navigate("explore");return;
+  }
   if(action==="select-npc"){
    if(!active().includes(target.dataset.npc))throw Error("Islander is no longer in the villa.");
    state.npc=target.dataset.npc;state.dialogue=null;state.feedback="";navigate("talk");return;
