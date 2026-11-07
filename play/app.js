@@ -143,28 +143,44 @@ function miniStats(){
    '<div class="textline"><span class="muted">Your story memories</span><b>'+playerJournal(w).length+'</b></div>');
 }
 function home(){
- const w=world(),islanders=active();
- const ceremony=(w.day===1 || (w.day%14===0&&w.day<90))?
-   'A pairing decision is coming up. Who will catch your eye?':'The villa never stays quiet for long.';
- return chrome('<div class="stage"><div class="corner"><span class="pill">♡ Season One</span></div>'+
-   '<div><div class="eyebrow">Day '+w.day+' · '+(w.day<10?"First impressions":"The story continues")+'</div>'+
-   '<h1>Your summer. Your rules.</h1><p>'+esc(ceremony)+'</p><div class="actions">'+
-   btn("nav","Explore Villa",'data-tab="explore"',true)+
-   btn("nav","Meet Islanders",'data-tab="cast"')+btn("nav","Today's Events",'data-tab="events"')+
-   '</div></div></div>'+
-   '<div class="layout-2" style="margin-top:18px"><div class="stack">'+
-   '<div><div class="sectionhead"><h2>The Islanders</h2>'+btn("nav","View all",'data-tab="cast"')+'</div>'+
-   '<div class="cast-grid">'+islanders.slice(0,12).map(id=>castCard(id)).join("")+'</div></div>'+
-   '<div><div class="sectionhead"><h2>Explore the Villa</h2></div>'+
-   '<div class="grid">'+places.slice(0,4).map(locationTile).join("")+'</div></div></div>'+
-   '<div class="stack">'+miniStats()+
-   panel('<div class="eyebrow">Tonight in the villa</div><h3>'+esc(dailyAgenda(w).events.at(-1)?.title||"Time to mingle")+'</h3>'+
-   '<p class="muted">Choose your connections, explore rooms and move the season forward when you are ready.</p>'+
-   btn("nav","View schedule",'data-tab="events"',true))+
-   panel('<div class="eyebrow">Love or drama?</div><h3>Someone might surprise you.</h3>'+
-   '<p class="muted">Islanders have lives of their own. You only discover secrets when someone actually tells you.</p>'+
-   btn("nav","Start a conversation",'data-tab="talk"'))+
-   '</div></div>');
+ const w=world(),room=places.find(p=>p.id===state.place)||places[0];
+ const where=contestantLocations(w);
+ const nearby=active().filter(id=>where[id]===room.id);
+ const partner=partnerOf(w,w.playerId);
+ const art=currentPhotoOutfit(w);
+ const next=dailyAgenda(w).events.at(-1);
+ const scenePos=room.image*20;
+ return chrome('<div class="game-hud"><span class="eyebrow">Season One · Day '+w.day+'</span>'+
+    '<span class="pill">♡ '+esc(partner?name(partner):"Single")+'</span></div>'+
+   '<div class="immersive-scene" data-room="'+esc(room.id)+'">'+
+    '<div class="scene-environment" style="background-position:'+scenePos+'% 50%" aria-hidden="true"></div>'+
+    '<div class="scene-top"><span class="pill">'+esc(room.name)+'</span>'+
+       '<span class="pill">Day '+w.day+' / 90</span></div>'+
+    '<div class="scene-player">'+fullBodyAvatar(art?.id||"swimwear-01","scene-player-art")+
+     '<div class="scene-player-name">'+esc(w.people[w.playerId].name)+' ♡</div></div>'+
+    '<div class="scene-menu"><div class="eyebrow">You are in the villa</div>'+
+     '<h1>'+esc(room.name)+'</h1>'+
+     '<p>'+esc(room.note)+'. Your choices shape what happens next.</p>'+
+     '<div class="scene-main-actions">'+
+      btn("nav","Talk to someone",'data-tab="talk"',true)+
+      btn("nav","Get dressed",'data-tab="wardrobe"')+
+      btn("nav","Tonight's events",'data-tab="events"')+
+     '</div></div>'+
+    '<div class="scene-bottom"><div class="scene-bottom-title"><strong>Islanders</strong>'+
+     '<span>'+nearby.length+' here · '+active().length+' in the villa</span></div>'+
+     '<div class="scene-faces">'+active().slice(0,11).map(id=>
+        '<button type="button" class="scene-face" data-action="select-npc" data-npc="'+esc(id)+'">'+
+         portrait(id)+'<span>'+esc(name(id))+'</span></button>').join("")+'</div></div>'+
+   '</div>'+
+   '<div class="game-actionbar"><div><div class="eyebrow">Coming up</div>'+
+     '<strong>'+esc(next?.title||"Evening at the villa")+'</strong></div>'+
+    '<div class="actions">'+btn("nav","Walk around",'data-tab="explore"')+
+      btn("nav","The Islanders",'data-tab="cast"')+
+      btn("nav","Continue the day",'data-tab="events"',true)+'</div></div>'+
+   '<div class="sectionhead"><h3>Move to another part of the villa</h3></div>'+
+   '<div class="room-thumbs">'+places.map(p=>'<button type="button" class="room-thumb '+(p.id===room.id?"active":"")+
+     '" data-action="location" data-place="'+esc(p.id)+'">'+scene(p.image)+
+     '<span>'+esc(p.name)+'</span></button>').join("")+'</div>');
 }
 function cast(){
  const ids=Object.keys(world().people).filter(id=>id!==world().playerId);
