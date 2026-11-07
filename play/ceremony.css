@@ -1,0 +1,27 @@
+/* Interactive, cinematic, player-controlled firepit recoupling. */
+.ceremony-scene{position:relative;min-height:clamp(500px,67vh,690px);display:flex;align-items:end}
+.ceremony-scene .scene-wallpaper{background-image:url('./assets/scene-sprite.webp');background-size:600% 100%;background-position:20% center}
+.ceremony-scene::after{background:linear-gradient(0deg,#16091cf3 0%,#250f2a8a 45%,#2c0b1822 100%)}
+.ceremony-content{position:relative;width:100%;padding:80px clamp(18px,4vw,48px) 28px;z-index:2}
+.ceremony-content h1{font-size:clamp(2.8rem,6vw,5.4rem);line-height:1.02;max-width:790px;text-shadow:0 3px 25px #18061b}
+.ceremony-content p{max-width:540px;color:#ffe8f1;text-shadow:0 3px 9px #160a1b}
+.ceremony-portrait-dock{display:flex;gap:13px;align-items:end;overflow-x:auto;padding:18px 0;scroll-snap-type:x proximity}
+.ceremony-person{flex:0 0 145px;scroll-snap-align:start;background:linear-gradient(180deg,#3e2343d8,#180d24eb);border:2px solid #f7aed166;
+ border-radius:18px;color:#fff;overflow:hidden;cursor:pointer;box-shadow:0 6px 25px #120a1e90}
+.ceremony-person .portrait{aspect-ratio:112/136}
+.ceremony-person .name{display:block;text-align:center;font-weight:700;padding:10px}
+.ceremony-person.selected,.ceremony-person[aria-pressed=true]{border-color:#ff75bd;box-shadow:0 0 25px #fe64ae9f;transform:translateY(-6px)}
+.ceremony-person:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.ceremony-choice{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(230px,.7fr);gap:14px;margin:18px 0}
+.ceremony-feedback{padding:16px;border-radius:16px;background:#4e234a;border:1px solid #ffa7d68c}
+.ceremony-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ceremony-pair{border:1px solid #e599b663;background:#1e122ae0;border-radius:17px;overflow:hidden;padding:12px}
+.ceremony-pair .portraits{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-bottom:11px}
+.ceremony-pair .portraits .portrait{aspect-ratio:112/113;border-radius:10px}
+.ceremony-pair strong{display:block;text-align:center}
+.ceremony-pair.your-couple{box-shadow:0 0 22px #f35cad69;border-color:#ff94c7}
+@media(max-width:700px){
+ .ceremony-scene{min-height:490px}
+ .ceremony-person{flex-basis:115px}.ceremony-content{padding:70px 17px 24px}
+ .ceremony-choice{grid-template-columns:1fr}
+}
