@@ -91,14 +91,22 @@ function chrome(content){
    '<strong style="font-size:1.03rem">Villa After Dark</strong></div>'+chips+'</header>';
  return '<div class="backdrop" aria-hidden="true"></div><div class="frame">'+nav+
   '<div class="main">'+header+(state.feedback?'<div class="notice" role="status">'+esc(state.feedback)+'</div>':"")+
-  content+'<footer>Visual development build · Character portraits are concept artwork, not a finished live dress-up model · No purchases or AI fees</footer></div></div>';
+  content+'<footer>Early preview · Free to play · Your progress stays in this browser</footer></div></div>';
 }
 function createCharacter(){
  const traits=["loyal","romantic","ambitious","jealous","outgoing","shy","honest","secretive",
   "flirtatious","cautious","impulsive","empathetic","competitive","independent","forgiving"];
- const form=panel('<div class="eyebrow">Your story starts here</div><h2>Create your islander</h2>'+
-   '<p class="muted">You control who you are. Eleven original islanders are ready to meet you.</p>'+
-   '<form id="create-form"><div class="two">'+
+ const form=panel(
+  '<div class="eyebrow">Step into the spotlight</div><h2>Create your islander</h2>'+
+  '<div class="creator-stepper" aria-label="Character creation progress">'+
+   '<span class="creator-dot current" data-step-label="1">01 · Your story</span>'+
+   '<span class="creator-dot" data-step-label="2">02 · Personality</span>'+
+   '<span class="creator-dot" data-step-label="3">03 · Your look</span>'+
+   '</div>'+
+  '<form id="create-form" class="creator-form" data-step="1">'+
+  '<div class="creator-step" data-step="1"><h3>Who are you?</h3>'+
+   '<p class="muted">Your character, your name, your story. Nobody else chooses these for you.</p>'+
+   '<div class="two">'+
    '<div class="input"><label for="name">Your name</label><input id="name" name="name" maxlength="40" required placeholder="Your character name"></div>'+
    '<div class="input"><label for="age">Age (21–35)</label><input id="age" name="age" type="number" min="21" max="35" required value="25"></div>'+
    '<div class="input"><label for="gender">Gender</label><select id="gender" name="gender"><option value="woman">Woman</option><option value="man">Man</option><option value="nonbinary">Nonbinary</option></select></div>'+
@@ -106,23 +114,40 @@ function createCharacter(){
    '<div class="input"><label for="occupation">Occupation</label><input id="occupation" name="occupation" maxlength="80" placeholder="What do you do?" required></div>'+
    '</div><div class="input"><label for="backstory">Your story (optional)</label>'+
    '<textarea id="backstory" maxlength="2000" name="backstory" placeholder="What brought you to the villa?"></textarea></div>'+
+   '<div class="creator-actions">'+btn("creator-next","Choose my personality","",true)+'</div>'+
+  '</div>'+
+  '<div class="creator-step" data-step="2"><h3>What makes you, you?</h3>'+
+   '<p class="muted">Choose five traits. They help shape how others react to you.</p>'+
    '<div class="input"><label>Choose exactly five traits '+
      '<span id="trait-progress" class="option-counter" aria-live="polite">0 / 5 selected</span></label>'+
      '<div class="checks">'+traits.map(t=>
      '<label><input type="checkbox" name="trait" value="'+t+'"> <span>'+esc(t)+'</span></label>').join("")+'</div></div>'+
    '<div class="input"><label>Who could catch your eye?</label><div class="checks">'+
-    ["man","woman","nonbinary"].map(x=>'<label><input type="checkbox" name="attractedTo" value="'+x+'" '+(x==="man"?"checked":"")+'> '+x+'</label>').join("")+
-   '</div></div><p class="small muted">The starting cast has six men and five women. With a woman player, that makes six of each.</p>'+
-   '<button class="btn primary" type="submit">Enter the villa ♡</button></form>');
- const preview=panel('<div class="eyebrow">The Dressing Suite</div><h2>Style your avatar</h2>'+
-   fullBodyAvatar(state.introLook,"intro-avatar")+
-   '<p class="small muted">These are the first two realistic, full-body outfits on a preview model. Face, body, skin and hair editing are still being developed.</p>'+
-   visualOutfitChoices(state.introLook,"intro-outfit")+
-   '<div class="stats" style="margin-top:13px"><div class="stat"><b>12</b><span>Islanders</span></div><div class="stat"><b>90</b><span>Villa days</span></div><div class="stat"><b>Free</b><span>No purchases</span></div></div>');
- return chrome('<div class="stage"><div><div class="eyebrow">Welcome to Paradise</div>'+
-  '<h1>Love looks better after dark.</h1><p>A tropical paradise. Eleven strangers. Ninety days of chemistry, choices and consequences.</p></div></div>'+
-  '<div class="sectionhead"><h2>Make your entrance</h2></div><div class="intro-grid">'+form+preview+'</div>');
+    ["man","woman","nonbinary"].map(x=>'<label><input type="checkbox" name="attractedTo" value="'+x+'" '+(x==="man"?"checked":"")+'> <span>'+esc(x)+'</span></label>').join("")+
+   '</div></div>'+
+   '<div class="creator-actions">'+btn("creator-prev","Back")+
+     btn("creator-next","Choose my entrance outfit","",true)+'</div>'+
+  '</div>'+
+  '<div class="creator-step" data-step="3"><h3>The first look</h3>'+
+   '<p class="muted">Choose what you will wear when you enter the villa. Your selected outfit appears on the model beside the form.</p>'+
+   '<div class="creator-mini-look">'+visualOutfitChoices(state.introLook,"intro-outfit")+'</div>'+
+   '<div class="creator-actions">'+btn("creator-prev","Back")+
+     '<button class="btn primary" type="submit">Enter the villa ♡</button></div>'+
+  '</div></form>'
+ );
+ const preview=panel('<div class="eyebrow">Dressing Suite</div>'+
+   '<h2>Style your entrance</h2>'+fullBodyAvatar(state.introLook,"intro-avatar")+
+   '<div class="creator-look-title">'+esc(PHOTO_OUTFITS.find(x=>x.id===state.introLook)?.title||"Your outfit")+'</div>'+
+   '<p class="small muted">Two realistic illustrated outfits are available to try on so far. More hair, body and clothing artwork is being made.</p>'+
+   '<div class="stats" style="margin-top:13px"><div class="stat"><b>12</b><span>Islanders</span></div>'+
+   '<div class="stat"><b>90</b><span>Villa days</span></div>'+
+   '<div class="stat"><b>Free</b><span>No purchases</span></div></div>'
+ );
+ return chrome('<section class="creator-hero"><div class="eyebrow">Villa After Dark · Season One</div>'+
+  '<h1>Make your entrance.</h1><p>A glamorous villa. Eleven strangers. One story that belongs to you.</p></section>'+
+  '<div class="intro-grid creator-grid">'+form+preview+'</div>');
 }
+
 function castCard(id,clickable=true){
  const p=person(id),r=relationshipBetween(world(),world().playerId,id);
  return '<button class="islander" data-action="'+(clickable?"select-npc":"noop")+'" data-npc="'+esc(id)+'" '+(clickable?"":"disabled")+'>'+
