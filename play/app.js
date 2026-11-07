@@ -103,7 +103,7 @@ function createCharacter(){
    '<span class="creator-dot" data-step-label="2">02 · Personality</span>'+
    '<span class="creator-dot" data-step-label="3">03 · Your look</span>'+
    '</div>'+
-  '<form id="create-form" class="creator-form" data-step="1">'+
+  '<form id="create-form" class="creator-form" data-step="1"><p id="creator-note" class="creator-note" role="status"></p>'+
   '<div class="creator-step" data-step="1"><h3>Who are you?</h3>'+
    '<p class="muted">Your character, your name, your story. Nobody else chooses these for you.</p>'+
    '<div class="two">'+
@@ -146,6 +146,36 @@ function createCharacter(){
  return chrome('<section class="creator-hero"><div class="eyebrow">Villa After Dark · Season One</div>'+
   '<h1>Make your entrance.</h1><p>A glamorous villa. Eleven strangers. One story that belongs to you.</p></section>'+
   '<div class="intro-grid creator-grid">'+form+preview+'</div>');
+}
+
+function changeCreatorStep(direction){
+ const form=document.getElementById?.("create-form");
+ if(!form)return;
+ const current=Number(form.dataset.step||1);
+ const next=Math.min(3,Math.max(1,current+direction));
+ if(next===current)return;
+ const note=form.querySelector("#creator-note");
+ if(note)note.textContent="";
+ if(direction>0&&current===1){
+  const required=[...form.querySelectorAll(".creator-step[data-step='1'] [required]")];
+  const invalid=required.find(field=>!field.checkValidity());
+  if(invalid){
+    if(note)note.textContent="Complete the required details before continuing.";
+    invalid.reportValidity();return;
+  }
+ }
+ if(direction>0&&current===2){
+  const selected=form.querySelectorAll('input[name="trait"]:checked').length;
+  const interests=form.querySelectorAll('input[name="attractedTo"]:checked').length;
+  if(selected!==5||!interests){
+   if(note)note.textContent="Choose exactly five traits and at least one attraction preference.";
+   return;
+  }
+ }
+ form.dataset.step=String(next);
+ document.querySelectorAll?.(".creator-dot").forEach(element=>{
+  element.classList.toggle("current",element.dataset.stepLabel===String(next));
+ });
 }
 
 function castCard(id,clickable=true){
@@ -517,7 +547,10 @@ function create(form){
 root.addEventListener("submit",e=>{
  e.preventDefault();
  try{
-  if(e.target.id==="create-form"){create(e.target);return;}
+  if(e.target.id==="create-form"){
+   if(e.target.dataset?.step&&e.target.dataset.step!=="3"){changeCreatorStep(1);return;}
+   create(e.target);return;
+  }
   if(!world())return;
   if(e.target.id==="talk-form"){
    const text=String(new FormData(e.target).get("message")||"");
@@ -569,6 +602,8 @@ root.addEventListener("click",e=>{
  const action=target.dataset.action;
  try{
   if(action==="nav"){state.feedback="";navigate(target.dataset.tab);return;}
+  if(action==="creator-next"&&!world()){changeCreatorStep(1);return;}
+  if(action==="creator-prev"&&!world()){changeCreatorStep(-1);return;}
   if(action==="intro-outfit"&&!world()){
    const look=PHOTO_OUTFITS.find(x=>x.id===target.dataset.outfit);
    if(!look)throw Error("Unknown outfit preview");
@@ -579,6 +614,8 @@ root.addEventListener("click",e=>{
     avatar.dataset.look=look.id;
     avatar.setAttribute("aria-label","Full-body outfit photograph: "+look.title);
    }
+   const lookTitle=document.querySelector?.(".creator-look-title");
+   if(lookTitle)lookTitle.textContent=look.title;
    document.querySelectorAll?.('[data-action="intro-outfit"]').forEach(button=>{
     const selected=button.dataset.outfit===look.id;
     button.classList.toggle("selected",selected);
