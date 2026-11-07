@@ -1,6 +1,7 @@
 import {createPlayerProfile,updatePlayerAppearance} from "../src/player-profile.js";
 import {createAppearance,APPEARANCE_OPTIONS,GARMENTS,changeFeature,equip,saveLook} from "../src/character-style.js";
 import {createSeasonOneCast,STARTING_ROSTER} from "../src/season-one-cast.js";
+import {PHOTO_OUTFITS,choosePhotoOutfit,currentPhotoOutfit} from "../src/avatar-art.js";
 import {startSeason,completeDay} from "../src/season.js";
 import {say,suggestedReplies} from "../src/conversation.js";
 import {availableScenes,chooseStoryOption} from "../src/story-engine.js";
@@ -18,7 +19,7 @@ import {previewFinale,resolveFinale,reunionSummary} from "../src/finale.js";
 const root=document.getElementById("app");
 const SAVE="visual-season-one";
 const state={world:null,tab:"home",npc:"npc-01",place:"pool",feedback:"",
-  dialogue:null,lastReport:null,pairing:undefined,strategy:null};
+  dialogue:null,lastReport:null,pairing:undefined,strategy:null,introLook:"swimwear-01"};
 const places=[
  {id:"pool",name:"Pool Deck",image:0,note:"Meet by the water"},
  {id:"firepit",name:"Firepit",image:1,note:"Nighttime conversations"},
@@ -48,6 +49,20 @@ const portrait=(id,cssClass="")=>{
  const x=(index%6)*20,y=index<6?0:100;
  return '<div class="portrait '+cssClass+'" style="background-position:'+x+'% '+y+'%" role="img" aria-label="Concept portrait artwork for '+esc(name(id))+'"></div>';
 };
+
+function fullBodyAvatar(lookId="swimwear-01",extraClass=""){
+ const look=PHOTO_OUTFITS.find(x=>x.id===lookId)||PHOTO_OUTFITS[0];
+ return '<div class="avatar-art '+esc(extraClass)+'" data-look="'+esc(look.id)+'" data-frame="'+look.frame+
+   '" role="img" aria-label="Full-body outfit photograph: '+esc(look.title)+'"></div>';
+}
+function visualOutfitChoices(selected,action="photo-outfit"){
+ return '<div class="photo-look-choices" aria-label="Photo outfit choices">'+
+   PHOTO_OUTFITS.map(item=>'<button type="button" class="look-choice '+(item.id===selected?"selected":"")+
+    '" data-action="'+action+'" data-outfit="'+esc(item.id)+'" aria-pressed="'+(item.id===selected)+'">'+
+    '<span class="look-thumb" data-frame="'+item.frame+'" aria-hidden="true"></span>'+
+    '<span class="look-choice-name"><strong>'+esc(item.title)+'</strong><small>'+esc(item.detail)+'</small></span></button>').join("")+'</div>';
+}
+
 const scene=(i)=>'<div class="scene-image" style="background-position:'+i*20+'% 0" aria-hidden="true"></div>';
 function persist(){
  if(!world())return;
