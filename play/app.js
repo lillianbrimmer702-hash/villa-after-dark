@@ -234,7 +234,8 @@ function home(){
        event?"A villa challenge is on the schedule.":"Take your time. Your choices, your pace.")+'</p></div>'+
     '<div class="scene-options">'+
     btn("nav","Get dressed",'data-tab="wardrobe"')+
-    btn("nav","Tonight's events",'data-tab="events"',true)+'</div></div>'+
+    btn("nav",w.day===1||(w.day%14===0&&w.day<90)?"Recoupling Ceremony":"Tonight's events",
+      w.day===1||(w.day%14===0&&w.day<90)?'data-tab="ceremony"':'data-tab="events"',true)+'</div></div>'+
   '<div class="sectionhead"><h2>Who is catching your eye?</h2>'+
      btn("nav","All islanders",'data-tab="cast"')+'</div>'+
   '<div class="islander-strip" aria-label="Choose an islander to approach">'+
