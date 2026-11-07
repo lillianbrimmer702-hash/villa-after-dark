@@ -111,9 +111,11 @@ function createCharacter(){
     ["man","woman","nonbinary"].map(x=>'<label><input type="checkbox" name="attractedTo" value="'+x+'" '+(x==="man"?"checked":"")+'> '+x+'</label>').join("")+
    '</div></div><p class="small muted">The starting cast has six men and five women. With a woman player, that makes six of each.</p>'+
    '<button class="btn primary" type="submit">Enter the villa ♡</button></form>');
- const preview=panel('<div class="eyebrow">Your look, your rules</div><h2>Step into the spotlight</h2>'+portrait("player","intro-portrait")+
-   '<p class="small muted">Style reference only. This portrait is not your customized character. We are still building changeable, photorealistic character artwork.</p>'+
-   '<div class="stats"><div class="stat"><b>12</b><span>Islanders</span></div><div class="stat"><b>90</b><span>Villa days</span></div><div class="stat"><b>100%</b><span>Free</span></div></div>');
+ const preview=panel('<div class="eyebrow">The Dressing Suite</div><h2>Style your avatar</h2>'+
+   fullBodyAvatar(state.introLook,"intro-avatar")+
+   '<p class="small muted">These are the first two realistic, full-body outfits on a preview model. Face, body, skin and hair editing are still being developed.</p>'+
+   visualOutfitChoices(state.introLook,"intro-outfit")+
+   '<div class="stats" style="margin-top:13px"><div class="stat"><b>12</b><span>Islanders</span></div><div class="stat"><b>90</b><span>Villa days</span></div><div class="stat"><b>Free</b><span>No purchases</span></div></div>');
  return chrome('<div class="stage"><div><div class="eyebrow">Welcome to Paradise</div>'+
   '<h1>Love looks better after dark.</h1><p>A tropical paradise. Eleven strangers. Ninety days of chemistry, choices and consequences.</p></div></div>'+
   '<div class="sectionhead"><h2>Make your entrance</h2></div><div class="intro-grid">'+form+preview+'</div>');
@@ -356,7 +358,7 @@ function create(form){
   name:String(d.get("name")||""),age:Number(d.get("age")),gender:String(d.get("gender")||"woman"),
   hometown:String(d.get("hometown")||""),occupation:String(d.get("occupation")||""),
   backstory:String(d.get("backstory")||""),traits,attractedTo,
-  appearance:createAppearance()
+  appearance:createAppearance({}, {top:null,bottom:null,swimwear:state.introLook})
  });
  state.world=startSeason(profile,createSeasonOneCast());
  state.tab="home";state.npc="npc-01";state.dialogue=null;
