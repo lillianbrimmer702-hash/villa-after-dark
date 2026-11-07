@@ -144,7 +144,6 @@ function miniStats(){
 }
 function home(){
  const w=world(),islanders=active();
- const featured=availableScenes(w,currentNpc());
  const isFirst=w.day===1;
  const dateTitle=isFirst?"The first night":"Another day, another temptation";
  const event=challengeForDay(w.day);
@@ -172,7 +171,7 @@ function home(){
     '<div class="scene-options">'+
     btn("nav","Get dressed",'data-tab="wardrobe"')+
     btn("nav","Tonight's events",'data-tab="events"',true)+'</div></div>'+
-  '<div class="sectionhead"><h2>Who's catching your eye?</h2>'+
+  '<div class="sectionhead"><h2>Who is catching your eye?</h2>'+
      btn("nav","All islanders",'data-tab="cast"')+'</div>'+
   '<div class="islander-strip" aria-label="Choose an islander to approach">'+
      islanders.map(id=>castCard(id)).join("")+'</div>'+
