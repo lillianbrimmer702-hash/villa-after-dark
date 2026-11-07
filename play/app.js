@@ -261,27 +261,35 @@ function events(){
 }
 function wardrobe(){
  const w=world(),p=w.people[w.playerId],look=p.appearance;
- const keys=["skinTone","hairTexture","hairColor","hairLength","bodyType","makeup","tattoo","piercing"];
- return chrome('<div class="sectionhead"><h2>Character Studio & Wardrobe</h2></div>'+
-  '<div class="layout-2"><div class="stack">'+
-    panel('<div class="eyebrow">Your appearance</div><h3>Make it yours.</h3>'+
-      '<p class="small muted">Your selections are saved to your character. Live photorealistic feature and clothing rendering is still being built; the concept portrait does not change yet.</p>'+
-      '<div class="two">'+keys.map(k=>'<div class="input"><label for="feat-'+k+'">'+esc(k.replace(/([A-Z])/g," $1"))+'</label>'+
-         '<select id="feat-'+k+'" data-feature="'+k+'">'+APPEARANCE_OPTIONS[k].map(v=>'<option value="'+esc(v)+'" '+(v===look.features[k]?"selected":"")+'>'+esc(v.replaceAll("-"," "))+'</option>').join("")+'</select></div>').join("")+'</div>')+
-    panel('<div class="eyebrow">Dress for tonight</div><h3>Wardrobe</h3>'+
-      '<div class="two">'+["dress","top","bottom","shoes","swimwear","accessory"].map(cat=>
-        '<div class="input"><label for="outfit-'+cat+'">'+esc(cat)+'</label><select id="outfit-'+cat+'" data-outfit="'+cat+'">'+
-        '<option value="">Choose a piece</option>'+
-        GARMENTS.filter(g=>g.category===cat).map(g=>'<option value="'+esc(g.id)+'" '+(look.outfit[cat]===g.id?"selected":"")+'>'+esc(g.name)+'</option>').join("")+
-        '</select></div>').join("")+'</div>'+
-      '<p class="small muted">All 60 pieces are free. Their illustrated versions are not finished.</p>')+
-    panel('<div class="eyebrow">My saved looks</div><div class="input"><label for="look-title">Look name</label>'+
-     '<input id="look-title" maxlength="60" placeholder="e.g. Poolside Glow"></div>'+btn("save-look","Save this look","",true)+
-     '<div class="look-list" style="margin-top:12px">'+look.savedLooks.map(x=>
-        btn("restore-look",x.title,'data-look="'+esc(x.id)+'"')).join("")+'</div>')+
-  '</div><div class="stack">'+panel('<h3>'+esc(p.name)+' ♡</h3>'+portrait("player","intro-portrait")+
-    '<p class="small muted">Glam art reference only — not your saved appearance.</p>')+
-    miniStats()+'</div></div>');
+ const shown=currentPhotoOutfit(w);
+ const keys=["skinTone","eyeColor","faceShape","noseShape","lipShape",
+   "hairTexture","hairColor","hairLength","bodyType","makeup","tattoo","piercing"];
+ return chrome('<div class="eyebrow">The Dressing Suite</div>'+
+  '<div class="sectionhead"><h2>Character Studio & Wardrobe</h2>'+
+  '<span class="small muted">Outfits save automatically</span></div>'+
+  '<div class="dressing-room">'+
+   '<div class="dresser-preview">'+fullBodyAvatar(shown?.id||"swimwear-01","dresser-avatar")+
+    '<div class="dresser-name">'+esc(p.name)+' <span>♡</span></div>'+
+    '<div class="dresser-caption">'+(shown?esc(shown.title):"Saved outfit has no finished picture yet")+'</div>'+
+   '</div>'+
+   '<div class="dresser-menu"><div class="eyebrow">Make an entrance</div><h2>Dress your avatar</h2>'+
+    '<p class="muted">Select a look and watch the full-body picture change.</p>'+
+    visualOutfitChoices(shown?.id||"","photo-outfit")+
+    '<p class="small muted">The two images are complete outfit photographs of one preview model. Fully mix-and-match clothing and customizable faces, hairstyles, skin tones and bodies still need matching art.</p>'+
+    '<div class="fancy-line"></div><div class="eyebrow">My Lookbook</div>'+
+    '<div class="input"><label for="look-title">Give this look a name</label>'+
+    '<input id="look-title" maxlength="60" placeholder="e.g. Golden Hour"></div>'+
+    btn("save-look","Save this outfit","",true)+
+    '<div class="look-list" style="margin-top:12px">'+
+     look.savedLooks.map(x=>btn("restore-look",x.title,'data-look="'+esc(x.id)+'"')).join("")+'</div>'+
+    '<details class="later-settings"><summary>Other appearance settings (saved, not pictured yet)</summary>'+
+     '<p class="small muted">These preferences are saved to your character. They do not yet change the realistic avatar photograph.</p>'+
+     '<div class="two">'+keys.map(k=>'<div class="input"><label for="feat-'+k+'">'+
+       esc(k.replace(/([A-Z])/g," $1"))+'</label><select id="feat-'+k+'" data-feature="'+k+'">'+
+       APPEARANCE_OPTIONS[k].map(v=>'<option value="'+esc(v)+'" '+(v===look.features[k]?"selected":"")+'>'+
+         esc(v.replaceAll("-"," "))+'</option>').join("")+'</select></div>').join("")+
+     '</div></details>'+
+   '</div></div>');
 }
 function phone(){
  const w=world(),messages=inboxFor(w,w.playerId).slice(-32).reverse();
