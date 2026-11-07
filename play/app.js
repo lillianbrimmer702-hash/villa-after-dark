@@ -226,53 +226,40 @@ function explore(){
 }
 function talk(){
  const w=world(),id=currentNpc();
- if(!id)return chrome(panel("<h2>No active islanders right now.</h2>"));
- const npc=person(id),r=relationshipBetween(w,w.playerId,id);
- const scenes=availableScenes(w,id),moment=scenes[0]||null;
- const response=state.dialogue?.reply||state.dialogue?.response||null;
- const look=currentPhotoOutfit(w);
- const place=places.find(p=>p.id===state.place)||places[0];
- const pos=(place.image*20)+"% center";
- return chrome(
-  '<div class="sectionhead"><h2>One-on-one with '+esc(npc.name)+'</h2>'+
-   '<span class="small muted">Day '+w.day+' · '+esc(place.name)+'</span></div>'+
-  '<div class="input dialogue-select"><label for="npc-switch">Who do you want to see?</label>'+
-   '<select id="npc-switch">'+active().map(x=>
-     '<option value="'+esc(x)+'" '+(x===id?'selected':'')+'>'+esc(name(x))+'</option>'
-    ).join("")+'</select></div>'+
-  '<section class="scene-shell dialogue-scene" aria-label="Your conversation with '+esc(npc.name)+'">'+
-   '<div class="scene-wallpaper" aria-hidden="true" style="background-position:'+pos+'"></div>'+
-   '<div class="scene-label">A private moment</div>'+
-   '<div class="dialogue-scene-inner">'+
-    '<div class="dialogue-character player">'+fullBodyAvatar(look?.id||"swimwear-01")+
-     '<span class="nameplate">'+esc(w.people[w.playerId].name)+' · Preview outfit</span></div>'+
-    '<div class="dialogue-character">'+portrait(id)+
-     '<span class="nameplate">'+esc(npc.name)+'</span></div>'+
-   '</div>'+
-   '<div class="dialogue-box">'+
-    '<h3>'+esc(npc.name)+(response?' responds':' · '+esc(moment?.title||"A quiet moment"))+'</h3>'+
-    '<p>'+esc(response||moment?.opening||(
-      npc.name+" is taking in the view. What would you like to say?"))+'</p>'+
-   '</div></section>'+
-  '<div class="scene-hud"><div class="top-chips">'+
-   '<span class="pill">♡ Affection <b>'+r.affection+'</b></span>'+
-   '<span class="pill">Trust <b>'+r.trust+'</b></span>'+
-   '<span class="pill">'+esc(npc.age)+' · '+esc(npc.occupation)+'</span></div>'+
-   btn("nav","Walk away",'data-tab="explore"')+'</div>'+
-  (moment?'<div class="sectionhead"><h2>What do you do?</h2><span class="small muted">Your decision will be remembered.</span></div>'+
-   '<div class="dialogue-options">'+moment.choices.map(choice=>
-    btn("choice",choice.label,'data-scene="'+esc(moment.id)+'" data-choice="'+esc(choice.id)+'"')
-   ).join("")+'</div>':
-   '<div class="game-help">There are no new scripted scenes with '+esc(npc.name)+
-   ' today. More moments unlock later in the season.</div>')+
-  '<div class="fancy-line"></div>'+
-  '<form class="dialogue-compose" id="talk-form">'+
-   '<label class="sr-only" for="talk-text">Your message</label>'+
-   '<textarea id="talk-text" name="message" maxlength="2000" required '+
-    'placeholder="Or say something in your own words..."></textarea>'+
-   '<button class="btn primary" type="submit">Say it</button></form>'+
-  '<div class="game-help">Free typing currently recognizes a limited set of phrases; scripted story options support more meaningful choices.</div>'
- );
+ if(!id)return chrome(panel('<h2>No active islanders right now.</h2>'));
+ const npc=person(id),rel=relationshipBetween(w,w.playerId,id);
+ const scenes=availableScenes(w,id).slice(0,2);
+ const first=scenes[0];
+ const response=state.dialogue?.reply||state.dialogue?.response;
+ const current=places.find(p=>p.id===state.place)||places[0];
+ const playerLook=currentPhotoOutfit(w);
+ const line=response||first?.opening||
+  'You catch '+npc.name+' alone for a moment. The rest of the villa seems far away.';
+ return chrome('<div class="eyebrow">One-on-one · Day '+w.day+'</div>'+
+  '<div class="novel-stage"><div class="novel-backdrop" style="background-position:'+current.image*20+'% 50%" aria-hidden="true"></div>'+
+   '<div class="novel-top"><span class="pill">'+esc(current.name)+'</span>'+
+    '<span class="pill">♡ '+esc(npc.name)+'</span></div>'+
+   '<div class="novel-player">'+fullBodyAvatar(playerLook?.id||"swimwear-01","novel-player-art")+'</div>'+
+   '<div class="novel-npc">'+portrait(id,"novel-npc-art")+
+    '<div class="novel-npc-name">'+esc(npc.name)+'</div></div>'+
+   '<div class="novel-dialogue"><div class="eyebrow">'+esc(response?npc.name:first?.title||"Get to know each other")+'</div>'+
+    '<p>'+esc(line)+'</p></div></div>'+
+  '<div class="novel-bar"><div class="novel-connection"><strong>'+esc(npc.name)+'</strong>'+
+    '<span>'+esc(npc.age)+' · '+esc(npc.occupation)+'</span>'+
+    '<span>♡ '+rel.affection+' affection · '+rel.trust+' trust</span></div>'+
+    '<button class="btn" type="button" data-action="nav" data-tab="explore">Back to the villa</button></div>'+
+   '<div class="novel-lower"><section class="novel-choices"><div class="eyebrow">What do you do?</div>'+
+    (first?'<div class="choices">'+first.choices.map(o=>
+      btn("choice",o.label,'data-scene="'+esc(first.id)+'" data-choice="'+esc(o.id)+'"')).join("")+'</div>':
+      '<p class="muted">No new authored scene with '+esc(npc.name)+' right now. You can still speak freely or meet another islander.</p>')+
+    '<details class="novel-free"><summary>Say something in your own words</summary>'+
+      '<form id="talk-form"><div class="input"><label for="talk-text">Your message</label>'+
+      '<textarea id="talk-text" name="message" required maxlength="2000" placeholder="Talk to '+esc(npc.name)+'..."></textarea></div>'+
+      '<button class="btn primary" type="submit">Speak</button></form>'+
+      '<p class="small muted">Free typing currently understands simple actions, not unrestricted AI conversation.</p></details></section>'+
+   '<section class="novel-other"><div class="eyebrow">Meet somebody else</div>'+
+     '<div class="scene-faces">'+active().map(x=>'<button type="button" class="scene-face" data-action="select-npc" data-npc="'+esc(x)+'">'+
+       portrait(x)+'<span>'+esc(name(x))+'</span></button>').join("")+'</div></section></div>');
 }
 function events(){
  const w=world(),plan=dailyAgenda(w),challenge=challengeForDay(w.day);
