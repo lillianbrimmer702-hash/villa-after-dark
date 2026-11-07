@@ -10,7 +10,7 @@ test("character creation has three real CSS-controlled steps and no preset trait
  const js=readFileSync(resolve(root,"play/app.js"),"utf8");
  assert.match(html,/creator\.css/);
  for(const n of [1,2,3]){
-  assert.match(css,new RegExp('creator-form\\\\[data-step="'+n+'"\\\\]'));
+  assert.ok(css.includes('.creator-form[data-step="'+n+'"]'),"Missing style for creator step "+n);
   assert.match(js,new RegExp('creator-step" data-step="'+n+'"'));
  }
  assert.match(js,/id="creator-note"/);
