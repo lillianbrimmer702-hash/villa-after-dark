@@ -18,10 +18,12 @@ test("visual app compiles, uses local assets and routes from home",()=>{
  assert.match(css,/cast-sprite\.webp/);
  assert.match(css,/scene-sprite\.webp/);
  assert.match(css,/villa-pool\.webp/);
+ assert.match(css,/\.input \.checks label\{display:flex;align-items:center/);
+ assert.match(css,/\.input \.checks input\[type="checkbox"\]/);
  assert.doesNotMatch(js,/api[_-]?key|stripe|openai\.com/i);
 });
 test("real optimized photo sprite assets are committed",()=>{
- for(const name of ["cast-sprite.webp","scene-sprite.webp","villa-pool.webp"]){
+ for(const name of ["cast-sprite.webp","scene-sprite.webp","villa-pool.webp","player-looks.webp"]){
   const path=resolve(root,"play/assets",name);
   assert.ok(statSync(path).size>4000);
   const data=readFileSync(path);
@@ -45,6 +47,8 @@ test("player can create a named visual season and open a contestant",async()=>{
  };
  await import("../play/app.js");
  assert.match(app.innerHTML,/Create your islander/);
+ // The creator must remember an actual illustrated outfit choice.
+ callbacks.click({target:{closest:()=>({dataset:{action:"intro-outfit",outfit:"swimwear-06"}})}});
  callbacks.submit({preventDefault(){},target:{id:"create-form",data:{
   name:"Nova",age:"25",gender:"woman",hometown:"Seattle",
   occupation:"Astronaut",backstory:"My own story",
@@ -55,6 +59,7 @@ test("player can create a named visual season and open a contestant",async()=>{
  assert.match(app.innerHTML,/Luca/);
  assert.match(app.innerHTML,/Sienna/);
  assert.ok(store.has("villa-after-dark:save:visual-season-one"));
+ assert.equal(JSON.parse(store.get("villa-after-dark:save:visual-season-one")).world.people.player.appearance.outfit.swimwear,"swimwear-06");
  callbacks.click({target:{closest:()=>({dataset:{action:"select-npc",npc:"npc-01"}})}});
  assert.match(app.innerHTML,/One-on-one/);
  assert.match(app.innerHTML,/Luca/);
@@ -73,6 +78,12 @@ test("player can create a named visual season and open a contestant",async()=>{
  assert.match(app.innerHTML,/Day 2/);
  click("nav",{tab:"wardrobe"});
  assert.match(app.innerHTML,/Character Studio/);
+ assert.match(app.innerHTML,/data-frame="1"/);
+ click("photo-outfit",{outfit:"swimwear-01"});
+ assert.match(app.innerHTML,/data-frame="0"/);
+ assert.equal(JSON.parse(store.get("villa-after-dark:save:visual-season-one")).world.people.player.appearance.outfit.swimwear,"swimwear-01");
+ click("photo-outfit",{outfit:"swimwear-06"});
+ assert.match(app.innerHTML,/data-frame="1"/);
  callbacks.change({target:{id:"feat-hairColor",value:"copper",dataset:{feature:"hairColor"}}});
  const envelope=JSON.parse(store.get("villa-after-dark:save:visual-season-one"));
  assert.equal(envelope.world.people.player.appearance.features.hairColor,"copper");
