@@ -2,6 +2,7 @@ import {createPlayerProfile,updatePlayerAppearance} from "../src/player-profile.
 import {createAppearance,APPEARANCE_OPTIONS,GARMENTS,changeFeature,equip,saveLook} from "../src/character-style.js";
 import {createSeasonOneCast,STARTING_ROSTER} from "../src/season-one-cast.js";
 import {entranceState,continueEntrance,chooseFirstImpression,finishEntrance,FIRST_IMPRESSION_CHOICES} from "../src/arrival.js";
+import {dailyMoment,chooseDailyMoment} from "../src/episode-moments.js";
 import {PHOTO_OUTFITS,choosePhotoOutfit,currentPhotoOutfit} from "../src/avatar-art.js";
 import {startSeason,completeDay} from "../src/season.js";
 import {say,suggestedReplies} from "../src/conversation.js";
@@ -29,7 +30,7 @@ const places=[
  {id:"spa",name:"Wellness Studio",image:4,note:"An escape from the drama"},
  {id:"beach",name:"Beach",image:5,note:"A quieter place"}
 ];
-const navItems=[["home","⌂","Villa"],["arrival","♡","First Night"],["cast","♧","Islanders"],["explore","⌖","Explore"],["talk","♡","Talk"],["wardrobe","✧","Wardrobe"],
+const navItems=[["home","⌂","Villa"],["arrival","♡","First Night"],["moment","✦","Today’s Scene"],["cast","♧","Islanders"],["explore","⌖","Explore"],["talk","♡","Talk"],["wardrobe","✧","Wardrobe"],
  ["events","◇","Events"],["phone","✉","Phone"],["journal","◫","Journal"],["hut","◉","Beach Hut"],["save","▣","Save / Load"]];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=(tag,content,attrs="")=>"<"+tag+" "+attrs+">"+content+"</"+tag+">";
@@ -203,6 +204,8 @@ function miniStats(){
 function home(){
  const w=world(),islanders=active();
  const isFirst=w.day===1;
+ const nextScene=dailyMoment(w);
+ const momentPending=!!nextScene&&!nextScene.result;
  const dateTitle=isFirst?"The first night":"Another day, another temptation";
  const event=challengeForDay(w.day);
  const look=currentPhotoOutfit(w);
@@ -216,7 +219,7 @@ function home(){
       "Eleven strangers are waiting. Your first move could change everything.":
       "The couples are shifting, the villa is talking, and your next choice is yours.")+
   '</p><div class="actions">'+
-   btn("nav",isFirst&&!entranceState(w).completed?"Play your first night":"Walk around the villa",isFirst&&!entranceState(w).completed?'data-tab="arrival"':'data-tab="explore"',true)+
+   btn("nav",isFirst&&!entranceState(w).completed?"Play your first night":momentPending?"Play today’s story":"Walk around the villa",isFirst&&!entranceState(w).completed?'data-tab="arrival"':momentPending?'data-tab="moment"':'data-tab="explore"',true)+
    btn("nav","Find someone to talk to",'data-tab="talk"')+
    '</div><p class="small dim" style="margin-top:14px">Your story starts with the people you meet, not a checklist.</p></div>'+
   '<div class="home-avatar" aria-label="Preview model wearing your selected illustrated outfit">'+
@@ -308,6 +311,43 @@ function arrival(){
         fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
         portrait(entry.targetId,"arrival-npc-art")+
       '</div></div></section>'
+ );
+}
+
+
+/** A fresh, interactive story scene appears on each villa day after Day 1.
+ * Player choices affect actual relationships, not just decorative text.
+ */
+function moment(){
+ const w=world();
+ if(w.day===1)return arrival();
+ const m=dailyMoment(w);
+ if(!m)return chrome(panel('<h2>No new scene right now.</h2>'+
+   btn("nav","Return to the villa",'data-tab="home"',true)));
+ const p=places.find(x=>x.id===m.place)||places[0];
+ const look=currentPhotoOutfit(w);
+ const completed=!!m.result;
+ return chrome(
+  '<section class="scene-shell moment-scene" aria-label="Day '+w.day+' scene with '+esc(m.targetName)+'">'+
+   '<div class="scene-wallpaper" aria-hidden="true" style="background-position:'+(p.image*20)+'% 50%"></div>'+
+   '<div class="scene-label">Day '+w.day+' · A moment alone</div>'+
+   '<div class="moment-stage"><div class="moment-copy"><div class="eyebrow">'+esc(p.name)+'</div>'+
+     '<h1>'+esc(m.title)+'</h1>'+
+     '<p>You run into '+esc(m.targetName)+' at the '+esc(p.name)+'. What happens next is your choice.</p></div>'+
+     '<div class="moment-characters">'+fullBodyAvatar(look?.id||"swimwear-01")+
+      portrait(m.targetId)+'</div>'+
+   '</div></section>'+
+   '<div class="moment-script"><div class="eyebrow">'+esc(completed?"After your choice":m.targetName+" says")+'</div>'+
+    '<p>'+esc(completed?m.result.response:m.opening)+'</p></div>'+
+   (completed?
+     '<div class="moment-finish">'+btn("nav","Explore the villa",'data-tab="explore"',true)+
+      btn("nav","Talk to '+esc(m.targetName)+'",'data-tab="talk"')+
+      '<span class="small muted">Your decision is saved for Day '+w.day+'.</span></div>':
+     '<div><div class="sectionhead"><h2>What will you do?</h2>'+
+     '<span class="small muted">One decision, with lasting consequences</span></div>'+
+     '<div class="moment-actions">'+m.options.map(choice=>
+       btn("moment-choice",choice.label,'data-choice="'+esc(choice.id)+'"')
+     ).join("")+'</div></div>')
  );
 }
 
@@ -518,7 +558,7 @@ function render(){
  try{
   if(!world())body=createCharacter();
   else{
-   const pages={home,arrival,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
+   const pages={home,arrival,moment,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
    body=(pages[state.tab]||home)();
   }
  }catch(e){
@@ -630,6 +670,11 @@ root.addEventListener("click",e=>{
    persist();render();return;
   }
   const w=world();
+  if(action==="moment-choice"){
+   chooseDailyMoment(w,target.dataset.choice);
+   state.feedback="";
+   persist();render();return;
+  }
   if(action==="arrival-select"){
    if(entranceState(w).phase!=="first-impression")throw Error("Finish arriving before approaching anyone");
    if(!active().includes(target.dataset.npc))throw Error("That islander is not here");
@@ -664,6 +709,7 @@ root.addEventListener("click",e=>{
    state.lastReport=completeDay(w,{playerChoice:state.pairing,challengeApproach:state.strategy});
    state.pairing=undefined;state.strategy=null;
    state.feedback="Day "+state.lastReport.day+" finished. Welcome to the next chapter.";
+   if(w.day>=2 && !w.simulatedDays.includes(90))state.tab="moment";
   }
   if(action==="save"){state.feedback="Progress saved.";persist();}
   if(action==="reset"){
