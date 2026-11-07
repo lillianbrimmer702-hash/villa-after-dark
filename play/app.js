@@ -30,7 +30,7 @@ const places=[
  {id:"spa",name:"Wellness Studio",image:4,note:"An escape from the drama"},
  {id:"beach",name:"Beach",image:5,note:"A quieter place"}
 ];
-const navItems=[["home","⌂","Villa"],["arrival","♡","First Night"],["moment","✦","Today’s Scene"],["cast","♧","Islanders"],["explore","⌖","Explore"],["talk","♡","Talk"],["wardrobe","✧","Wardrobe"],
+const navItems=[["home","⌂","Villa"],["arrival","♡","First Night"],["moment","✦","Today’s Scene"],["ceremony","♡","Recoupling"],["cast","♧","Islanders"],["explore","⌖","Explore"],["talk","♡","Talk"],["wardrobe","✧","Wardrobe"],
  ["events","◇","Events"],["phone","✉","Phone"],["journal","◫","Journal"],["hut","◉","Beach Hut"],["save","▣","Save / Load"]];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const el=(tag,content,attrs="")=>"<"+tag+" "+attrs+">"+content+"</"+tag+">";
@@ -435,6 +435,69 @@ function talk(){
      '<div class="scene-faces">'+active().map(x=>'<button type="button" class="scene-face" data-action="select-npc" data-npc="'+esc(x)+'">'+
        portrait(x)+'<span>'+esc(name(x))+'</span></button>').join("")+'</div></section></div>');
 }
+
+/**
+ * Firepit romance ceremony. Selecting a contestant is a local UI choice;
+ * no romantic commitment occurs until the player confirms the ceremony.
+ */
+function ceremony(){
+ const w=world(),scheduled=w.day===1||(w.day%14===0&&w.day<90);
+ const done=w.ceremonies?.find(x=>x.day===w.day);
+ if(!scheduled&&!done){
+  const next=Array.from({length:91-w.day},(_,i)=>w.day+i)
+    .find(day=>day>1&&day%14===0&&day<90);
+  return chrome('<section class="scene-shell ceremony-scene">'+
+    '<div class="scene-wallpaper" aria-hidden="true"></div>'+
+    '<div class="ceremony-content"><div class="eyebrow">A quiet firepit tonight</div>'+
+      '<h1>The next coupling is coming.</h1>'+
+      '<p>'+esc(next?"The next recoupling ceremony takes place on Day "+next+".":"The finale is drawing near.")+'</p>'+
+      btn("nav","Keep exploring",'data-tab="explore"',true)+'</div></section>');
+ }
+ const eligible=active().filter(id=>mutuallyAttracted(w,w.playerId,id));
+ const chosen=state.pairing===undefined?partnerOf(w,w.playerId):state.pairing;
+ const playerIsSingle=chosen===null;
+ const suggested=state.pairing===undefined?
+   (partnerOf(w,w.playerId)?"Keep "+name(partnerOf(w,w.playerId)):"Stay single"):
+   chosen===null?"Stay single":name(chosen);
+ const activeIds=activeContestants(w);
+ const singles=done?.singles||[];
+ const title=w.day===1?"Your First Coupling":"The Recoupling Ceremony";
+ const images=eligible.map(id=>
+  '<button class="ceremony-person '+(chosen===id?'selected':'')+
+   '" data-action="ceremony-pick" data-npc="'+esc(id)+'" aria-pressed="'+(chosen===id)+'">'+
+   portrait(id)+'<span class="name">'+esc(name(id))+'</span></button>').join("");
+ const summary=done?
+   '<div class="sectionhead"><h2>The couples tonight</h2></div>'+
+   '<div class="ceremony-results">'+done.pairs.map(pair=>
+    '<div class="ceremony-pair '+(pair.includes(w.playerId)?"your-couple":"")+'">'+
+    '<div class="portraits">'+pair.map(id=>id===w.playerId?
+     fullBodyAvatar(currentPhotoOutfit(w)?.id||"swimwear-01"):portrait(id)).join("")+'</div>'+
+    '<strong>'+esc(name(pair[0]))+' ♡ '+esc(name(pair[1]))+'</strong></div>'
+   ).join("")+'</div>'+
+   (singles.length?'<p class="muted" style="margin-top:15px">Single: '+esc(singles.map(name).join(", "))+'</p>':"")+
+   '<div class="moment-finish">'+btn("nav","Return to villa",'data-tab="home"',true)+
+   btn("nav","Explore",'data-tab="explore"')+'</div>':
+   '<div class="sectionhead"><h2>Who will you choose?</h2><span class="small muted">You can change your mind before confirming.</span></div>'+
+   '<div class="ceremony-portrait-dock" aria-label="Choose a possible partner">'+images+'</div>'+
+   '<div class="ceremony-choice"><div class="ceremony-feedback">'+
+    '<div class="eyebrow">Your choice</div><h3>'+esc(suggested)+'</h3>'+
+    '<p class="small muted">Everyone else will couple up based on their own connections. Your choice is always yours.</p>'+
+    '</div><div class="stack">'+
+    btn("ceremony-single","I want to stay single")+
+    btn("ceremony-commit",w.day===1?"Confirm first pairing":"Confirm recoupling","",true)+'</div></div>';
+ return chrome(
+  '<section class="scene-shell ceremony-scene" aria-label="Villa firepit recoupling">'+
+   '<div class="scene-wallpaper" aria-hidden="true"></div>'+
+   '<div class="scene-label">Day '+w.day+' · The Firepit</div>'+
+   '<div class="ceremony-content"><div class="eyebrow">Tonight, hearts choose</div>'+
+   '<h1>'+esc(title)+'</h1>'+
+   '<p>'+esc(done?
+      "The decisions are made. These are the couples everyone witnessed at tonight's ceremony.":
+      "The firepit glows. The islanders wait. This is your decision to make.")+
+   '</p></div></section>'+summary
+ );
+}
+
 function events(){
  const w=world(),plan=dailyAgenda(w),challenge=challengeForDay(w.day);
  const ceremony=(w.day===1||w.day%14===0&&w.day<90)&&!w.ceremonies?.some(x=>x.day===w.day);
@@ -561,7 +624,7 @@ function render(){
  try{
   if(!world())body=createCharacter();
   else{
-   const pages={home,arrival,moment,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
+   const pages={home,arrival,moment,ceremony,cast,explore,talk,wardrobe,events,phone,journal,hut:beachHut,save:saves};
    body=(pages[state.tab]||home)();
   }
  }catch(e){
@@ -673,6 +736,21 @@ root.addEventListener("click",e=>{
    persist();render();return;
   }
   const w=world();
+  if(action==="ceremony-pick"){
+   if(!active().includes(target.dataset.npc)||
+      !mutuallyAttracted(w,w.playerId,target.dataset.npc))
+    throw Error("That contestant cannot couple with you");
+   state.pairing=target.dataset.npc;
+   state.feedback="";render();return;
+  }
+  if(action==="ceremony-single"){
+   state.pairing=null;state.feedback="";render();return;
+  }
+  if(action==="ceremony-commit"){
+   runRecoupling(w,state.pairing===undefined?{}:{playerChoice:state.pairing});
+   state.pairing=undefined;state.feedback="";
+   persist();render();return;
+  }
   if(action==="moment-choice"){
    chooseDailyMoment(w,target.dataset.choice);
    state.feedback="";
