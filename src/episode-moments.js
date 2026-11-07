@@ -4,7 +4,7 @@
  * Never displays hidden NPC memories or secrets.
  */
 import {recordEvent,relationshipBetween} from "./relationship-engine.js";
-import {partnerOf} from "./coupling.js";
+import {partnerOf,mutuallyAttracted} from "./coupling.js";
 
 const assert=(ok,message)=>{if(!ok)throw new Error(message)};
 const MOMENTS=Object.freeze([
@@ -90,7 +90,9 @@ export function chooseDailyMoment(world,choiceId){
  const template=MOMENTS[(world.day-2)%MOMENTS.length];
  const choice=template.options.find(o=>o[0]===choiceId);
  assert(choice,"Unrecognized moment choice");
- const eventId=choice[2]?"daily-moment-"+world.day+"-"+moment.targetId:null;
+ const romanticRequest=choice[2]==="date";
+ const declined=romanticRequest&&!mutuallyAttracted(world,world.playerId,moment.targetId);
+ const eventId=choice[2]&&!declined?"daily-moment-"+world.day+"-"+moment.targetId:null;
  if(eventId){
   recordEvent(world,{
    id:eventId,day:world.day,type:choice[2],
@@ -99,8 +101,10 @@ export function chooseDailyMoment(world,choiceId){
   });
  }
  const result={
-  day:world.day,momentId:moment.id,targetId:moment.targetId,choiceId,eventId,
-  response:fill(choice[3],moment.targetName)
+  day:world.day,momentId:moment.id,targetId:moment.targetId,choiceId,eventId,declined,
+  response:declined
+    ?moment.targetName+' smiles. "That means a lot, but I only feel friendship here."'
+    :fill(choice[3],moment.targetName)
  };
  world.morningMoments ||= [];
  world.morningMoments.push(result);
