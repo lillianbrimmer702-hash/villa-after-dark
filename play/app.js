@@ -53,7 +53,10 @@ const portrait=(id,cssClass="")=>{
 };
 
 function fullBodyAvatar(lookId="swimwear-01",extraClass=""){
- const look=PHOTO_OUTFITS.find(x=>x.id===lookId)||PHOTO_OUTFITS[0];
+ const look=PHOTO_OUTFITS.find(x=>x.id===lookId);
+ if(!look)return '<div class="avatar-art avatar-unavailable '+esc(extraClass)+
+   '" role="status" aria-label="No matching artwork for this saved outfit">'+
+   '<span>Choose an illustrated outfit in the dressing room to see your avatar.</span></div>';
  return '<div class="avatar-art '+esc(extraClass)+'" data-look="'+esc(look.id)+'" data-frame="'+look.frame+
    '" role="img" aria-label="Full-body outfit photograph: '+esc(look.title)+'"></div>';
 }
@@ -223,7 +226,7 @@ function home(){
    btn("nav","Find someone to talk to",'data-tab="talk"')+
    '</div><p class="small dim" style="margin-top:14px">Your story starts with the people you meet, not a checklist.</p></div>'+
   '<div class="home-avatar" aria-label="Preview model wearing your selected illustrated outfit">'+
-    fullBodyAvatar(look?.id||"swimwear-01")+
+    fullBodyAvatar(look?.id??null)+
     '<span class="small dim">Outfit preview model</span></div></section>'+
   '<div class="scene-bottom"><div><div class="eyebrow">In the Villa</div>'+
     '<h2>'+esc(isFirst?"Make your first connection":event?event.title:"Where will the night take you?")+'</h2>'+
@@ -260,7 +263,7 @@ function arrival(){
      '<p>The villa lights glow against the ocean. You step through the entrance and hear the other islanders laughing beside the pool. All eyes turn your way.</p>'+
      '<div class="actions">'+btn("arrival-continue","Make your entrance","",true)+
      btn("nav","Get dressed first",'data-tab="wardrobe"')+'</div></div>'+
-    fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
+    fullBodyAvatar(outfit?.id??null,"arrival-player-art")+
     '</div></section>'+
     '<div class="arrival-bottom"><div class="eyebrow">Tonight’s first decision</div>'+
     '<h2>Who will you make your first impression on?</h2>'+
@@ -280,7 +283,7 @@ function arrival(){
       ' · '+esc(other.hometown)+'</p>'+
       '<p>'+esc(other.backstory)+'</p></div></div>'+
       '<div class="arrival-split-portraits">'+
-       fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
+       fullBodyAvatar(outfit?.id??null,"arrival-player-art")+
        portrait(selected,"arrival-npc-art")+'</div>'+
     '</div></section>'+
     '<div class="arrival-bottom"><div class="eyebrow">Approach an islander</div>'+
@@ -308,7 +311,7 @@ function arrival(){
       (entry.completed?btn("nav","Explore the villa",'data-tab="explore"',true):
        btn("arrival-finish","Step into the villa","",true))+
       '</div></div><div class="arrival-split-portraits">'+
-        fullBodyAvatar(outfit?.id||"swimwear-01","arrival-player-art")+
+        fullBodyAvatar(outfit?.id??null,"arrival-player-art")+
         portrait(entry.targetId,"arrival-npc-art")+
       '</div></div></section>'
  );
@@ -334,7 +337,7 @@ function moment(){
    '<div class="moment-stage"><div class="moment-copy"><div class="eyebrow">'+esc(p.name)+'</div>'+
      '<h1>'+esc(m.title)+'</h1>'+
      '<p>You run into '+esc(m.targetName)+' at the '+esc(p.name)+'. What happens next is your choice.</p></div>'+
-     '<div class="moment-characters">'+fullBodyAvatar(look?.id||"swimwear-01")+
+     '<div class="moment-characters">'+fullBodyAvatar(look?.id??null)+
       portrait(m.targetId)+'</div>'+
    '</div></section>'+
    '<div class="moment-script"><div class="eyebrow">'+esc(completed?"After your choice":m.targetName+" says")+'</div>'+
@@ -410,7 +413,7 @@ function talk(){
   '<div class="novel-stage"><div class="novel-backdrop" style="background-position:'+current.image*20+'% 50%" aria-hidden="true"></div>'+
    '<div class="novel-top"><span class="pill">'+esc(current.name)+'</span>'+
     '<span class="pill">♡ '+esc(npc.name)+'</span></div>'+
-   '<div class="novel-player">'+fullBodyAvatar(playerLook?.id||"swimwear-01","novel-player-art")+'</div>'+
+   '<div class="novel-player">'+fullBodyAvatar(playerLook?.id??null,"novel-player-art")+'</div>'+
    '<div class="novel-npc">'+portrait(id,"novel-npc-art")+
     '<div class="novel-npc-name">'+esc(npc.name)+'</div></div>'+
    '<div class="novel-dialogue"><div class="eyebrow">'+esc(response?npc.name:first?.title||"Get to know each other")+'</div>'+
@@ -479,7 +482,7 @@ function wardrobe(){
   '<div class="sectionhead"><h2>Character Studio & Wardrobe</h2>'+
   '<span class="small muted">Outfits save automatically</span></div>'+
   '<div class="dressing-room">'+
-   '<div class="dresser-preview">'+fullBodyAvatar(shown?.id||"swimwear-01","dresser-avatar")+
+   '<div class="dresser-preview">'+fullBodyAvatar(shown?.id??null,"dresser-avatar")+
     '<div class="dresser-name">'+esc(p.name)+' <span>♡</span></div>'+
     '<div class="dresser-caption">'+(shown?esc(shown.title):"Saved outfit has no finished picture yet")+'</div>'+
    '</div>'+
