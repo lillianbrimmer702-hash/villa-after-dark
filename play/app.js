@@ -105,8 +105,10 @@ function createCharacter(){
    '<div class="input"><label for="occupation">Occupation</label><input id="occupation" name="occupation" maxlength="80" placeholder="What do you do?" required></div>'+
    '</div><div class="input"><label for="backstory">Your story (optional)</label>'+
    '<textarea id="backstory" maxlength="2000" name="backstory" placeholder="What brought you to the villa?"></textarea></div>'+
-   '<div class="input"><label>Choose exactly five traits</label><div class="checks">'+traits.map((t,i)=>
-     '<label><input type="checkbox" name="trait" value="'+t+'" '+(i<5?"checked":"")+'> '+esc(t)+'</label>').join("")+'</div></div>'+
+   '<div class="input"><label>Choose exactly five traits '+
+     '<span id="trait-progress" class="option-counter" aria-live="polite">0 / 5 selected</span></label>'+
+     '<div class="checks">'+traits.map(t=>
+     '<label><input type="checkbox" name="trait" value="'+t+'"> <span>'+esc(t)+'</span></label>').join("")+'</div></div>'+
    '<div class="input"><label>Who could catch your eye?</label><div class="checks">'+
     ["man","woman","nonbinary"].map(x=>'<label><input type="checkbox" name="attractedTo" value="'+x+'" '+(x==="man"?"checked":"")+'> '+x+'</label>').join("")+
    '</div></div><p class="small muted">The starting cast has six men and five women. With a woman player, that makes six of each.</p>'+
@@ -441,6 +443,12 @@ root.addEventListener("submit",e=>{
 });
 root.addEventListener("change",e=>{
  const t=e.target;
+ if(t.name==="trait"&&!world()){
+  const chosen=document.querySelectorAll?.('input[name="trait"]:checked')?.length??0;
+  const display=document.getElementById?.("trait-progress");
+  if(display)display.textContent=chosen+" / 5 selected";
+  return;
+ }
  try{
   if(t.id==="npc-switch"){state.npc=t.value;state.dialogue=null;render();return;}
   if(t.id==="pair"){state.pairing=t.value==="keep"?undefined:t.value==="single"?null:t.value;return;}
