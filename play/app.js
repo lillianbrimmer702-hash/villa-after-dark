@@ -143,44 +143,42 @@ function miniStats(){
    '<div class="textline"><span class="muted">Your story memories</span><b>'+playerJournal(w).length+'</b></div>');
 }
 function home(){
- const w=world(),room=places.find(p=>p.id===state.place)||places[0];
- const where=contestantLocations(w);
- const nearby=active().filter(id=>where[id]===room.id);
- const partner=partnerOf(w,w.playerId);
- const art=currentPhotoOutfit(w);
- const next=dailyAgenda(w).events.at(-1);
- const scenePos=room.image*20;
- return chrome('<div class="game-hud"><span class="eyebrow">Season One · Day '+w.day+'</span>'+
-    '<span class="pill">♡ '+esc(partner?name(partner):"Single")+'</span></div>'+
-   '<div class="immersive-scene" data-room="'+esc(room.id)+'">'+
-    '<div class="scene-environment" style="background-position:'+scenePos+'% 50%" aria-hidden="true"></div>'+
-    '<div class="scene-top"><span class="pill">'+esc(room.name)+'</span>'+
-       '<span class="pill">Day '+w.day+' / 90</span></div>'+
-    '<div class="scene-player">'+fullBodyAvatar(art?.id||"swimwear-01","scene-player-art")+
-     '<div class="scene-player-name">'+esc(w.people[w.playerId].name)+' ♡</div></div>'+
-    '<div class="scene-menu"><div class="eyebrow">You are in the villa</div>'+
-     '<h1>'+esc(room.name)+'</h1>'+
-     '<p>'+esc(room.note)+'. Your choices shape what happens next.</p>'+
-     '<div class="scene-main-actions">'+
-      btn("nav","Talk to someone",'data-tab="talk"',true)+
-      btn("nav","Get dressed",'data-tab="wardrobe"')+
-      btn("nav","Tonight's events",'data-tab="events"')+
-     '</div></div>'+
-    '<div class="scene-bottom"><div class="scene-bottom-title"><strong>Islanders</strong>'+
-     '<span>'+nearby.length+' here · '+active().length+' in the villa</span></div>'+
-     '<div class="scene-faces">'+active().slice(0,11).map(id=>
-        '<button type="button" class="scene-face" data-action="select-npc" data-npc="'+esc(id)+'">'+
-         portrait(id)+'<span>'+esc(name(id))+'</span></button>').join("")+'</div></div>'+
-   '</div>'+
-   '<div class="game-actionbar"><div><div class="eyebrow">Coming up</div>'+
-     '<strong>'+esc(next?.title||"Evening at the villa")+'</strong></div>'+
-    '<div class="actions">'+btn("nav","Walk around",'data-tab="explore"')+
-      btn("nav","The Islanders",'data-tab="cast"')+
-      btn("nav","Continue the day",'data-tab="events"',true)+'</div></div>'+
-   '<div class="sectionhead"><h3>Move to another part of the villa</h3></div>'+
-   '<div class="room-thumbs">'+places.map(p=>'<button type="button" class="room-thumb '+(p.id===room.id?"active":"")+
-     '" data-action="location" data-place="'+esc(p.id)+'">'+scene(p.image)+
-     '<span>'+esc(p.name)+'</span></button>').join("")+'</div>');
+ const w=world(),islanders=active();
+ const featured=availableScenes(w,currentNpc());
+ const isFirst=w.day===1;
+ const dateTitle=isFirst?"The first night":"Another day, another temptation";
+ const event=challengeForDay(w.day);
+ const look=currentPhotoOutfit(w);
+ return chrome(
+  '<section class="scene-shell home-scene" aria-label="Villa poolside at sunset">'+
+  '<div class="scene-wallpaper" aria-hidden="true"></div>'+
+  '<div class="scene-label">Day '+w.day+' · '+esc(dateTitle)+'</div>'+
+  '<div class="home-headline"><div class="eyebrow">Welcome to Villa After Dark</div>'+
+  '<h1>Tonight, anything can happen.</h1>'+
+  '<p>'+esc(isFirst?
+      "Eleven strangers are waiting. Your first move could change everything.":
+      "The couples are shifting, the villa is talking, and your next choice is yours.")+
+  '</p><div class="actions">'+
+   btn("nav","Walk around the villa",'data-tab="explore"',true)+
+   btn("nav","Find someone to talk to",'data-tab="talk"')+
+   '</div><p class="small dim" style="margin-top:14px">Your story starts with the people you meet, not a checklist.</p></div>'+
+  '<div class="home-avatar" aria-label="Preview model wearing your selected illustrated outfit">'+
+    fullBodyAvatar(look?.id||"swimwear-01")+
+    '<span class="small dim">Outfit preview model</span></div></section>'+
+  '<div class="scene-bottom"><div><div class="eyebrow">In the Villa</div>'+
+    '<h2>'+esc(isFirst?"Make your first connection":event?event.title:"Where will the night take you?")+'</h2>'+
+    '<p>'+esc(isFirst?"Meet an islander, explore the rooms, or get ready for tonight.":
+       event?"A villa challenge is on the schedule.":"Take your time. Your choices, your pace.")+'</p></div>'+
+    '<div class="scene-options">'+
+    btn("nav","Get dressed",'data-tab="wardrobe"')+
+    btn("nav","Tonight's events",'data-tab="events"',true)+'</div></div>'+
+  '<div class="sectionhead"><h2>Who's catching your eye?</h2>'+
+     btn("nav","All islanders",'data-tab="cast"')+'</div>'+
+  '<div class="islander-strip" aria-label="Choose an islander to approach">'+
+     islanders.map(id=>castCard(id)).join("")+'</div>'+
+  '<div class="sectionhead"><h2>Where do you want to go?</h2></div>'+
+  '<div class="quick-locations">'+places.map(locationTile).join("")+'</div>'
+ );
 }
 function cast(){
  const ids=Object.keys(world().people).filter(id=>id!==world().playerId);
@@ -194,48 +192,87 @@ function cast(){
   group("The Men",men)+group("The Women",women)+(other.length?group("New Faces",other):""));
 }
 function explore(){
- const w=world();
- const selected=places.find(p=>p.id===state.place)||places[0];
+ const w=world(),selected=places.find(p=>p.id===state.place)||places[0];
  const where=contestantLocations(w);
  const people=active().filter(id=>where[id]===selected.id);
- return chrome('<div class="stage"><div><div class="eyebrow">Take a walk</div><h1>Explore Paradise.</h1>'+
-  '<p>Choose a location, then see who is around. The islanders move between spaces every day.</p></div></div>'+
-  '<div class="sectionhead"><h2>Find your spot</h2></div><div class="grid">'+places.map(locationTile).join("")+'</div>'+
-  '<div class="sectionhead"><h2>At the '+esc(selected.name)+'</h2></div>'+
-  panel('<div class="eyebrow">'+esc(selected.note)+'</div><p class="muted">'+
-    (people.length?"Someone is here. Choose who to approach.":"Nobody is here right now. Try another part of the villa.")+
-    '</p><div class="grid">'+people.map(id=>castCard(id)).join("")+'</div>'));
+ const artPosition=(selected.image*20)+"% center";
+ return chrome(
+  '<section class="scene-shell room-scene" aria-label="'+esc(selected.name)+' villa scene">'+
+   '<div class="scene-wallpaper" style="background-position:'+artPosition+'" aria-hidden="true"></div>'+
+   '<div class="scene-label">Explore · Day '+w.day+'</div>'+
+   '<div class="room-content"><div class="eyebrow">You enter the</div>'+
+    '<h1 class="room-heading">'+esc(selected.name)+'</h1>'+
+    '<p class="small" style="text-shadow:0 2px 9px #180a20">'+esc(selected.note)+'</p>'+
+    (people.length?'<div class="room-character-row" aria-label="Islanders at this location">'+
+      people.map(id=>
+       '<button class="room-islander" data-action="select-npc" data-npc="'+esc(id)+'" '+
+       'aria-label="Approach '+esc(name(id))+' at the '+esc(selected.name)+'">'+
+       portrait(id)+'<span class="room-islander-name">Talk to '+esc(name(id))+'</span></button>'
+      ).join("")+'</div>':
+      '<div class="room-empty"><h3>A quiet moment.</h3>'+
+      '<p>The room is empty right now. There are other places to explore, or you can enjoy the view.</p>'+
+      btn("nav","Check today's events",'data-tab="events"')+'</div>')+
+   '</div></section>'+
+  '<div class="scene-bottom"><div><div class="eyebrow">The Villa</div>'+
+   '<h2>Find your spot</h2><p>Walk to a different room and see who is there.</p></div>'+
+   '<div class="scene-options">'+btn("nav","Get dressed",'data-tab="wardrobe"')+
+    btn("nav","Back to poolside",'data-tab="home"')+'</div></div>'+
+  '<div class="room-map" aria-label="Choose another villa location">'+places.map(p=>
+     '<button class="tile" data-action="location" data-place="'+esc(p.id)+'" '+
+       (p.id===selected.id?'aria-current="location"':'')+'>'+scene(p.image)+
+       '<span class="titlebar">'+esc(p.name)+'</span></button>'
+   ).join("")+'</div>'
+ );
 }
 function talk(){
  const w=world(),id=currentNpc();
- if(!id)return chrome(panel('<h2>No active islanders right now.</h2>'));
+ if(!id)return chrome(panel("<h2>No active islanders right now.</h2>"));
  const npc=person(id),r=relationshipBetween(w,w.playerId,id);
- const scenes=availableScenes(w,id).slice(0,2);
- const message=state.dialogue?.reply||state.dialogue?.response;
- return chrome('<div class="sectionhead"><h2>Get closer</h2><span class="small muted">Your choices will be remembered</span></div>'+
-   '<div class="layout-2"><div class="stack">'+
-   panel('<div class="npc-stage">'+portrait(id)+
-     '<div><div class="eyebrow">One-on-one</div><h2>'+esc(npc.name)+'</h2>'+
-     '<p class="small muted">'+esc(npc.age)+' · '+esc(npc.occupation)+' · '+esc(npc.hometown)+'</p>'+
-     '<p>'+esc(npc.motive||"Getting to know you.")+'</p>'+
-     '<div class="stats"><div class="stat"><b>'+r.affection+'</b><span>Affection</span></div>'+
-     '<div class="stat"><b>'+r.trust+'</b><span>Trust</span></div>'+
-     '<div class="stat"><b>'+esc(npc.personality.traits[0])+'</b><span>Vibe</span></div></div></div>'+
-     (message?'<div class="speech" style="margin-top:16px">'+esc(message)+'</div>':"")+
-     '<div class="fancy-line"></div><form id="talk-form"><div class="input">'+
-     '<label for="talk-text">Say anything</label><textarea id="talk-text" name="message" required maxlength="2000" placeholder="Tell '+esc(npc.name)+' what is on your mind..."></textarea>'+
-     '</div><button class="btn primary" type="submit">Say it</button></form>'+
-     '<p class="small muted">Free typing uses a simple rule-based interpreter. The story choices below recognize more detailed decisions.</p>')+
-   panel('<div class="eyebrow">Story moments</div>'+
-     (scenes.length?scenes.map(s=>'<div class="feature"><h3>'+esc(s.title)+'</h3>'+
-       '<div class="speech">'+esc(s.opening)+'</div><div class="choices">'+
-       s.choices.map(o=>btn("choice",o.label,'data-scene="'+esc(s.id)+'" data-choice="'+esc(o.id)+'"')).join("")+
-       '</div></div>').join(""):'<p class="muted">No new story scene with this islander today. Try again after a day advances.</p>'))+
-   '</div><div class="stack">'+
-   panel('<div class="eyebrow">Who do you want to talk to?</div><div class="input"><label for="npc-switch">Choose an islander</label>'+
-     '<select id="npc-switch">'+active().map(x=>'<option value="'+esc(x)+'" '+(x===id?"selected":"")+'>'+esc(name(x))+'</option>').join("")+
-     '</select></div>')+
-   miniStats()+'</div></div>');
+ const scenes=availableScenes(w,id),moment=scenes[0]||null;
+ const response=state.dialogue?.reply||state.dialogue?.response||null;
+ const look=currentPhotoOutfit(w);
+ const place=places.find(p=>p.id===state.place)||places[0];
+ const pos=(place.image*20)+"% center";
+ return chrome(
+  '<div class="sectionhead"><h2>One-on-one with '+esc(npc.name)+'</h2>'+
+   '<span class="small muted">Day '+w.day+' · '+esc(place.name)+'</span></div>'+
+  '<div class="input dialogue-select"><label for="npc-switch">Who do you want to see?</label>'+
+   '<select id="npc-switch">'+active().map(x=>
+     '<option value="'+esc(x)+'" '+(x===id?'selected':'')+'>'+esc(name(x))+'</option>'
+    ).join("")+'</select></div>'+
+  '<section class="scene-shell dialogue-scene" aria-label="Your conversation with '+esc(npc.name)+'">'+
+   '<div class="scene-wallpaper" aria-hidden="true" style="background-position:'+pos+'"></div>'+
+   '<div class="scene-label">A private moment</div>'+
+   '<div class="dialogue-scene-inner">'+
+    '<div class="dialogue-character player">'+fullBodyAvatar(look?.id||"swimwear-01")+
+     '<span class="nameplate">'+esc(w.people[w.playerId].name)+' · Preview outfit</span></div>'+
+    '<div class="dialogue-character">'+portrait(id)+
+     '<span class="nameplate">'+esc(npc.name)+'</span></div>'+
+   '</div>'+
+   '<div class="dialogue-box">'+
+    '<h3>'+esc(npc.name)+(response?' responds':' · '+esc(moment?.title||"A quiet moment"))+'</h3>'+
+    '<p>'+esc(response||moment?.opening||(
+      npc.name+" is taking in the view. What would you like to say?"))+'</p>'+
+   '</div></section>'+
+  '<div class="scene-hud"><div class="top-chips">'+
+   '<span class="pill">♡ Affection <b>'+r.affection+'</b></span>'+
+   '<span class="pill">Trust <b>'+r.trust+'</b></span>'+
+   '<span class="pill">'+esc(npc.age)+' · '+esc(npc.occupation)+'</span></div>'+
+   btn("nav","Walk away",'data-tab="explore"')+'</div>'+
+  (moment?'<div class="sectionhead"><h2>What do you do?</h2><span class="small muted">Your decision will be remembered.</span></div>'+
+   '<div class="dialogue-options">'+moment.choices.map(choice=>
+    btn("choice",choice.label,'data-scene="'+esc(moment.id)+'" data-choice="'+esc(choice.id)+'"')
+   ).join("")+'</div>':
+   '<div class="game-help">There are no new scripted scenes with '+esc(npc.name)+
+   ' today. More moments unlock later in the season.</div>')+
+  '<div class="fancy-line"></div>'+
+  '<form class="dialogue-compose" id="talk-form">'+
+   '<label class="sr-only" for="talk-text">Your message</label>'+
+   '<textarea id="talk-text" name="message" maxlength="2000" required '+
+    'placeholder="Or say something in your own words..."></textarea>'+
+   '<button class="btn primary" type="submit">Say it</button></form>'+
+  '<div class="game-help">Free typing currently recognizes a limited set of phrases; scripted story options support more meaningful choices.</div>'
+ );
 }
 function events(){
  const w=world(),plan=dailyAgenda(w),challenge=challengeForDay(w.day);
