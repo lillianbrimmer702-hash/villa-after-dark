@@ -1,0 +1,42 @@
+/* First-night cinematic entrance and choice-based introduction. */
+.arrival-stage{min-height:clamp(520px,73vh,760px);display:flex;flex-direction:column;justify-content:end}
+.arrival-background{position:absolute;inset:0;z-index:-2;background:url('./assets/villa-pool.webp') center/cover no-repeat;filter:saturate(1.14)}
+.arrival-stage::after{background:linear-gradient(90deg,#150c1ed9 1%,#21102892 55%,#13081d34 100%),linear-gradient(0deg,#140a20ec 0%,transparent 60%)}
+.arrival-hero{position:relative;display:flex;align-items:end;justify-content:space-between;gap:28px;width:100%;
+ padding:clamp(40px,7vh,78px) clamp(22px,5vw,66px) clamp(25px,4vh,48px);min-height:500px}
+.arrival-copy{position:relative;z-index:2;max-width:700px;min-width:0;align-self:center}
+.arrival-copy h1{font-size:clamp(2.7rem,5vw,5rem);line-height:1.02;text-shadow:0 5px 25px #190819;margin:9px 0 24px}
+.arrival-copy>p{max-width:555px;line-height:1.6;font-size:1.03rem;color:#fff0f7;text-shadow:0 3px 12px #1a0b23}
+.arrival-player-art{flex:0 0 auto;width:min(30vw,280px);max-height:500px;align-self:end;filter:drop-shadow(0 10px 35px #160a1f)}
+.arrival-bottom{padding:19px 22px 27px;border:1px solid #f39bc06b;border-radius:19px;margin:16px 0;
+ background:linear-gradient(125deg,#2c1836ec,#150b20e0);backdrop-filter:blur(8px)}
+.arrival-bottom h2{margin:5px 0 12px}
+.arrival-intro-dialogue{border-left:3px solid #ff85b7;padding:16px 22px;
+ margin:22px 0 0;max-width:630px;background:#1a1022bc;border-radius:0 18px 18px 0}
+.arrival-intro-dialogue h2{font-size:1.6rem;margin:6px 0 9px}
+.arrival-intro-dialogue p{margin:0 0 8px}
+.arrival-split-portraits{display:flex;align-items:end;justify-content:end;gap:15px;flex:0 0 auto}
+.arrival-split-portraits .avatar-art{width:min(19vw,220px);height:auto;max-height:450px;align-self:end}
+.arrival-npc-art{width:min(20vw,240px);height:auto;aspect-ratio:112/126;
+ border:1px solid #ffb0cfab;border-radius:17px;box-shadow:0 16px 40px #120617bb}
+.arrival-dock{display:flex;gap:10px;overflow:auto;padding:12px 0 20px;scroll-snap-type:x proximity}
+.arrival-contact{width:clamp(86px,10vw,125px);flex:0 0 auto;overflow:hidden;border-radius:13px;color:white;
+ background:#28172f;border:2px solid transparent;text-align:center;padding:0 0 8px;scroll-snap-align:start}
+.arrival-contact .portrait{aspect-ratio:112/115}
+.arrival-contact span{display:block;padding:7px 4px 0;font-weight:700;font-size:.88rem}
+.arrival-contact.selected,.arrival-contact[aria-pressed="true"]{border-color:#ff85bd;box-shadow:0 0 16px #f663a277}
+.arrival-contact:hover{border-color:#ffc2de}
+.arrival-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:12px}
+.arrival-options .btn{min-height:62px;font-size:.93rem;text-align:center;background:linear-gradient(115deg,#83344ebd,#4f2556d9)}
+.arrival-options .btn:hover{border-color:#ffb0d7;filter:brightness(1.16)}
+@media(max-width:1050px){.arrival-hero{gap:10px}.arrival-split-portraits .avatar-art{width:160px}.arrival-npc-art{width:180px}}
+@media(max-width:700px){
+ .arrival-stage{min-height:560px}.arrival-hero{min-height:500px;align-items:end;padding:66px 15px 28px}
+ .arrival-copy{align-self:end}.arrival-copy h1{font-size:clamp(2.2rem,9vw,3.5rem)}
+ .arrival-copy>p{font-size:.91rem;max-width:380px}
+ .arrival-hero>.arrival-player-art{position:absolute;right:0;bottom:10px;width:36%;z-index:0;opacity:.45;pointer-events:none}
+ .arrival-intro .arrival-copy{z-index:2}.arrival-split-portraits{position:absolute;right:0;bottom:0;opacity:.5}
+ .arrival-split-portraits .avatar-art{display:none}.arrival-npc-art{width:150px}
+ .arrival-intro-dialogue{padding:12px 14px}.arrival-bottom{padding:15px}
+ .arrival-options{grid-template-columns:1fr}.arrival-contact{width:100px}
+}
