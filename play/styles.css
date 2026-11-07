@@ -87,3 +87,59 @@ footer{margin-top:30px;color:#af9caf;font-size:.75rem;padding-bottom:20px}
 .later-settings summary{cursor:pointer;color:#f4afce;font-size:.85rem;font-weight:600}
 @media(max-width:930px){.dressing-room{grid-template-columns:1fr}.dresser-preview{min-height:400px}.dresser-menu{max-height:none}}
 @media(max-width:550px){.photo-look-choices{grid-template-columns:1fr}.look-choice .look-thumb{width:70px;height:103px;flex-basis:70px}.intro-avatar{width:min(100%,230px)}}
+
+
+/* Scene-first villa screen: HUD and characters overlay the environment. */
+.game-hud{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:2px 0 12px}
+.immersive-scene{position:relative;min-height:650px;isolation:isolate;overflow:hidden;
+  background:#25172b;border-radius:23px;border:1px solid #ffaad78f;box-shadow:0 20px 60px #120a1b8f}
+.scene-environment{position:absolute;inset:0;z-index:-2;
+  background-image:url('./assets/scene-sprite.webp');background-size:600% 100%;background-repeat:no-repeat;
+  filter:saturate(1.16)}
+.immersive-scene[data-room="pool"] .scene-environment{background-image:url('./assets/villa-pool.webp');
+  background-size:cover;background-position:50% 50%!important}
+.immersive-scene::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,#1a0e29a6 0%,#1a0e2999 36%,#120a1f4a 100%),
+    linear-gradient(0deg,#0c0715ec 0%,transparent 43%,#140a2094 100%)}
+.scene-top{display:flex;justify-content:space-between;align-items:center;gap:10px;position:absolute;top:17px;left:20px;right:20px;z-index:4}
+.scene-player{position:absolute;bottom:157px;left:clamp(14px,3vw,48px);z-index:1;width:clamp(135px,21vw,220px)}
+.scene-player-art{width:100%;border:1px solid #ffe6f788;border-radius:17px 17px 6px 6px;max-height:460px;box-shadow:0 10px 25px #120a1a88}
+.scene-player-name{font-family:"Playfair Display",serif;font-weight:600;font-size:1.3rem;
+  text-align:center;padding:8px;background:#1d0c24dd;border-radius:0 0 15px 15px}
+.scene-menu{position:absolute;top:clamp(60px,14%,130px);left:clamp(210px,34%,400px);right:24px;max-width:550px;
+  text-shadow:0 2px 10px #180b2c}
+.scene-menu h1{font-size:clamp(2.3rem,5vw,4.3rem);margin:8px 0 10px}
+.scene-menu p{font-size:1.05rem;color:#f7e5ef}
+.scene-main-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.scene-main-actions .btn{background:#2d163bc9;backdrop-filter:blur(7px)}
+.scene-main-actions .btn.primary{background:linear-gradient(105deg,#e33d90,#a933a9)}
+.scene-bottom{position:absolute;bottom:0;left:0;right:0;z-index:3;background:#150b22dc;
+  backdrop-filter:blur(15px);padding:12px 17px 14px;border-top:1px solid #ffafd278}
+.scene-bottom-title{display:flex;align-items:baseline;justify-content:space-between;gap:9px;margin-bottom:8px}
+.scene-bottom-title strong{font:600 1.1rem "Playfair Display",Georgia,serif}
+.scene-bottom-title span{color:#cdb5d5;font-size:.77rem}
+.scene-faces{display:flex;gap:9px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#e37eb280 transparent;padding:3px 2px}
+.scene-face{flex:0 0 88px;padding:3px 3px 6px;border-radius:12px;border:1px solid #ffb0cf66;
+  background:#2c1834b9;color:#ffe4f0;font-size:.78rem;font-weight:700;cursor:pointer;transition:transform .15s}
+.scene-face:hover{transform:translateY(-2px);border-color:#ff89ca}
+.scene-face .portrait{width:100%;height:70px;aspect-ratio:auto;border-radius:8px 8px 4px 4px}
+.scene-face span{display:block;text-align:center;margin-top:3px}
+.game-actionbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 2px 4px}
+.game-actionbar strong{display:block;font-size:1.12rem}
+.game-actionbar .actions{margin:0}
+.room-thumbs{display:flex;gap:11px;overflow-x:auto;padding-bottom:5px}
+.room-thumb{position:relative;flex:1 0 125px;min-width:125px;max-width:240px;color:#fff;
+  padding:0 0 8px;border-radius:12px;overflow:hidden;background:#301c3d;border:1px solid #ffadd75e;font-weight:700;text-align:left}
+.room-thumb .scene-image{height:80px}
+.room-thumb span{display:block;padding:5px 10px}.room-thumb.active,.room-thumb:hover{border-color:#ff9ccb;box-shadow:0 0 15px #f44aa23d}
+@media(max-width:1000px){.scene-menu{left:33%;right:14px}.scene-menu h1{font-size:2.5rem}}
+@media(max-width:760px){
+ .immersive-scene{min-height:640px}
+ .scene-menu{left:20px;top:65px;right:14px;max-width:initial}
+ .scene-menu h1{font-size:2.35rem}
+ .scene-menu p{font-size:.88rem;max-width:360px}
+ .scene-main-actions{gap:6px}.scene-main-actions .btn{padding:9px 11px;font-size:.78rem}
+ .scene-player{width:125px;left:14px;bottom:160px}
+ .scene-bottom{padding:11px}.scene-face{flex-basis:77px}.scene-face .portrait{height:62px}
+ .game-actionbar{align-items:flex-start;flex-direction:column}
+}
