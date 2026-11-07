@@ -52,3 +52,17 @@ test("a saved scene retains its original partner and exact outcome",()=>{
  assert.equal(restored.morningMoments[0].targetId,first.targetId);
  assert.equal(restored.events[0].target,first.targetId);
 });
+
+test("a player invitation never forces a date with an incompatible NPC",()=>{
+ const w=make();advanceDay(w);advanceDay(w);
+ w.people[w.playerId].attractedTo=[];
+ const target=dailyMoment(w).targetId;
+ const result=chooseDailyMoment(w,"date");
+ assert.equal(result.targetId,target);
+ assert.equal(result.declined,true);
+ assert.equal(result.eventId,null);
+ assert.match(result.response,/only feel friendship/);
+ assert.equal(w.events.length,0);
+ const clone=loadWorld(serializeWorld(w));
+ assert.equal(dailyMoment(clone).result.declined,true);
+});
