@@ -143,3 +143,42 @@ footer{margin-top:30px;color:#af9caf;font-size:.75rem;padding-bottom:20px}
  .scene-bottom{padding:11px}.scene-face{flex-basis:77px}.scene-face .portrait{height:62px}
  .game-actionbar{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Visual novel dialogue: people and choices, not a blog post. */
+.novel-stage{position:relative;min-height:620px;border-radius:22px;overflow:hidden;isolation:isolate;
+ border:1px solid #ffb6d884;background:#2b1933;box-shadow:0 23px 60px #10051999}
+.novel-backdrop{position:absolute;inset:0;z-index:-2;background-image:url('./assets/scene-sprite.webp');
+ background-size:600% 100%;background-repeat:no-repeat;filter:saturate(1.1) brightness(.8)}
+.novel-stage::before{content:"";position:absolute;inset:0;z-index:-1;
+ background:linear-gradient(180deg,#160a2888,transparent 34%,#130c24a4 60%,#130b22f0 100%)}
+.novel-top{position:absolute;top:18px;left:20px;right:20px;display:flex;justify-content:space-between;gap:8px;z-index:5}
+.novel-player{position:absolute;bottom:149px;left:5%;width:clamp(120px,18%,210px);z-index:1}
+.novel-player-art{width:100%;border-radius:13px;box-shadow:0 10px 30px #18051a66}
+.novel-npc{position:absolute;right:7%;bottom:150px;width:clamp(160px,28%,290px);
+ text-align:center;z-index:2}
+.novel-npc-art{width:100%;aspect-ratio:112/126;border-radius:18px 18px 5px 5px;
+ border:1px solid #ffbcd992;box-shadow:0 10px 34px #15061bbf}
+.novel-npc-name{font:600 clamp(1.2rem,2vw,1.8rem) "Playfair Display",Georgia,serif;
+ padding:6px 12px;border-radius:0 0 16px 16px;background:#1c0b24d9}
+.novel-dialogue{position:absolute;bottom:0;left:0;right:0;min-height:145px;
+ padding:21px clamp(16px,4vw,38px);background:linear-gradient(90deg,#210d2af2,#4c1d4bf0);
+ border-top:1px solid #fbaed986;z-index:4}
+.novel-dialogue .eyebrow{font-size:.8rem}
+.novel-dialogue p{font-size:clamp(.96rem,1.5vw,1.18rem);margin:8px 0 2px;line-height:1.4}
+.novel-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:13px 0;padding:6px 2px}
+.novel-connection{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.novel-connection span{color:#d9c2d7;font-size:.79rem}
+.novel-lower{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(240px,.9fr);gap:15px}
+.novel-choices,.novel-other{min-width:0;border:1px solid var(--border);border-radius:18px;
+ padding:17px;background:#231427dc;backdrop-filter:blur(10px)}
+.novel-choices .btn{text-align:left;padding:14px 16px}
+.novel-choices .btn:hover{border-color:#ff8dc8;background:#633057}
+.novel-other .scene-faces{padding-top:12px}
+.novel-free{padding:15px 0 3px;border-top:1px solid #ffaccf55;margin-top:12px}
+.novel-free summary{cursor:pointer;color:#ffc0df;font-weight:700}
+@media(max-width:780px){.novel-lower{grid-template-columns:1fr}.novel-stage{min-height:540px}
+ .novel-npc{right:5%;width:37%;bottom:168px}.novel-player{left:5%;width:30%;bottom:168px}
+ .novel-dialogue{min-height:165px}}
+@media(max-width:420px){.novel-stage{min-height:500px}.novel-dialogue{min-height:170px}
+ .novel-player{bottom:170px}.novel-npc{bottom:170px}.novel-top{left:10px;right:10px;top:11px}}
