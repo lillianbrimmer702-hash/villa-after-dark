@@ -108,3 +108,12 @@
  .quick-locations{grid-template-columns:repeat(2,minmax(0,1fr))}
  .room-map .tile{width:132px;min-width:132px}
 }
+
+/* Character setup must feel tactile while remaining keyboard-accessible. */
+.input .checks label{display:flex;align-items:center;justify-content:flex-start;gap:12px;cursor:pointer}
+.input .checks label:has(input:checked){border-color:#ff9aca;background:#542642d9;box-shadow:inset 0 0 0 1px #ffa6d14d}
+.input .checks label:focus-within{outline:2px solid #ffc1de;outline-offset:2px}
+.input .checks label span{flex:1;min-width:0;line-height:1.3}
+#trait-progress{margin-left:9px;color:#ffc4e2;font-weight:700}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.home-avatar{z-index:0;opacity:.52;pointer-events:none}.home-headline{z-index:1}}
