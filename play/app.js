@@ -422,7 +422,29 @@ root.addEventListener("click",e=>{
  const action=target.dataset.action;
  try{
   if(action==="nav"){state.feedback="";navigate(target.dataset.tab);return;}
+  if(action==="intro-outfit"&&!world()){
+   const look=PHOTO_OUTFITS.find(x=>x.id===target.dataset.outfit);
+   if(!look)throw Error("Unknown outfit preview");
+   state.introLook=look.id;
+   const avatar=document.querySelector?.(".intro-avatar");
+   if(avatar){
+    avatar.dataset.frame=String(look.frame);
+    avatar.dataset.look=look.id;
+    avatar.setAttribute("aria-label","Full-body outfit photograph: "+look.title);
+   }
+   document.querySelectorAll?.('[data-action="intro-outfit"]').forEach(button=>{
+    const selected=button.dataset.outfit===look.id;
+    button.classList.toggle("selected",selected);
+    button.setAttribute("aria-pressed",String(selected));
+   });
+   return;
+  }
   if(!world())return;
+  if(action==="photo-outfit"){
+   const chosen=choosePhotoOutfit(world(),target.dataset.outfit);
+   state.feedback="Outfit changed to "+chosen.title+".";
+   persist();render();return;
+  }
   const w=world();
   if(action==="select-npc"){
    if(!active().includes(target.dataset.npc))throw Error("Islander is no longer in the villa.");
