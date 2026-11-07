@@ -1,0 +1,50 @@
+/* Interactive three-step avatar setup. Content stays mounted across steps
+   so typed biographies and choices are never lost on navigation. */
+.creator-hero{position:relative;overflow:hidden;border-radius:24px;
+ background:linear-gradient(90deg,#1f112aec,#2d12388e),url('./assets/villa-pool.webp') center/cover;
+ border:1px solid #ffabd164;box-shadow:0 16px 48px #11091d8c;padding:clamp(25px,5vw,62px);
+ min-height:180px}
+.creator-hero h1{font-size:clamp(2.6rem,6vw,5rem);line-height:1.03;margin:12px 0}
+.creator-hero p{font-size:1.04rem;max-width:620px;margin:0;color:#f5dded}
+.creator-grid{grid-template-columns:minmax(0,1.15fr) minmax(295px,.85fr);margin-top:18px;align-items:start}
+.creator-grid>.panel{padding:clamp(16px,2.7vw,32px)}
+.creator-grid>.panel:nth-child(2){position:sticky;top:83px;background:linear-gradient(160deg,#351d37e9,#1f1125f1);
+ text-align:center}
+.creator-grid .intro-avatar{width:min(100%,252px);margin:15px auto 10px}
+.creator-look-title{font:600 1.1rem "Playfair Display",Georgia,serif;color:#ffd1e9;margin:8px 0}
+.creator-stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:17px 0 24px}
+.creator-dot{padding:12px 9px;border-radius:11px;border:1px solid #b179a044;background:#24142b;color:#a995b2;
+ font-weight:700;font-size:.8rem;text-align:center}
+.creator-dot.current{border-color:#fc94c4;background:linear-gradient(115deg,#a442779e,#59316388);
+ color:#fff4fa;box-shadow:0 0 18px #f34b9a29}
+.creator-form[data-step="1"] .creator-step:not([data-step="1"]),
+.creator-form[data-step="2"] .creator-step:not([data-step="2"]),
+.creator-form[data-step="3"] .creator-step:not([data-step="3"]){display:none}
+.creator-form .creator-step{animation:creator-open .18s ease-out}
+.creator-form .creator-step h3{font-size:clamp(1.3rem,2.5vw,1.8rem)}
+.creator-form .input{margin:15px 0}
+.creator-form label{color:#fbe9f3}
+.creator-actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;
+ margin-top:27px;padding-top:17px;border-top:1px solid #ffb0d333}
+.creator-actions .btn.primary{min-width:200px;min-height:48px}
+.creator-note{padding:12px 14px;background:#63273ee6;border:1px solid #fa9aba;border-radius:12px;color:#ffedfa;margin:10px 0}
+.creator-note:empty{display:none}
+.creator-mini-look{background:#1b1125a8;border:1px solid #ba7b9d70;padding:12px;border-radius:18px;margin:13px 0}
+.creator-mini-look .photo-look-choices{margin:0}
+.creator-mini-look .look-choice{min-height:110px}
+.creator-form .checks input[type="checkbox"]{flex:0 0 20px}
+@keyframes creator-open{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:900px){
+ .creator-grid{grid-template-columns:1fr}
+ .creator-grid>.panel:nth-child(2){position:relative;top:0}
+ .creator-grid .intro-avatar{width:min(100%,220px)}
+}
+@media(max-width:500px){
+ .creator-hero{padding:25px 19px;min-height:180px}
+ .creator-stepper{gap:5px}
+ .creator-dot{font-size:.66rem;padding:10px 6px}
+ .creator-actions{justify-content:stretch}
+ .creator-actions .btn{flex:1}
+ .creator-form .two{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.creator-form .creator-step{animation:none}}
