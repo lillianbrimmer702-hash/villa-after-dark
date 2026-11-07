@@ -161,7 +161,7 @@ function home(){
       "Eleven strangers are waiting. Your first move could change everything.":
       "The couples are shifting, the villa is talking, and your next choice is yours.")+
   '</p><div class="actions">'+
-   btn("nav",isFirst&&entranceState(w).phase==="arrival"?"Begin your first night":"Walk around the villa",isFirst&&entranceState(w).phase==="arrival"?'data-tab="arrival"':'data-tab="explore"',true)+
+   btn("nav",isFirst&&!entranceState(w).completed?"Play your first night":"Walk around the villa",isFirst&&!entranceState(w).completed?'data-tab="arrival"':'data-tab="explore"',true)+
    btn("nav","Find someone to talk to",'data-tab="talk"')+
    '</div><p class="small dim" style="margin-top:14px">Your story starts with the people you meet, not a checklist.</p></div>'+
   '<div class="home-avatar" aria-label="Preview model wearing your selected illustrated outfit">'+
