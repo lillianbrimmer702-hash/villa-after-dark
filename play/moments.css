@@ -1,0 +1,35 @@
+/* Day-by-day story encounter: player decisions rather than a blog-like task list. */
+.moment-scene{min-height:clamp(520px,73vh,720px);display:flex;align-items:end}
+.moment-scene .scene-wallpaper{background-image:url('./assets/scene-sprite.webp');background-size:600% 100%;background-repeat:no-repeat}
+.moment-stage{position:relative;width:100%;display:flex;align-items:end;justify-content:space-between;
+ gap:25px;padding:72px clamp(18px,4vw,58px) 0}
+.moment-characters{display:flex;gap:10px;align-items:end;flex:0 0 auto;width:min(48%,530px);
+ justify-content:center;min-height:280px}
+.moment-characters .avatar-art{width:min(44%,220px);max-height:440px;border-radius:18px 18px 0 0;filter:drop-shadow(0 6px 28px #14081c)}
+.moment-characters .portrait{width:min(48%,240px);max-width:235px;aspect-ratio:112/126;border-radius:18px 18px 0 0;
+ box-shadow:0 10px 35px #13071ba8}
+.moment-copy{max-width:680px;flex:1;min-width:0;padding-bottom:45px;z-index:2}
+.moment-copy h1{font-size:clamp(2.5rem,5.3vw,5rem);line-height:1.02;text-shadow:0 3px 19px #13081d}
+.moment-copy p{font-size:1.05rem;text-shadow:0 2px 13px #180d21;color:#fff0f7}
+.moment-script{position:relative;margin:-26px clamp(15px,3vw,35px) 0;
+ background:linear-gradient(105deg,#180b22fa,#512247f4);
+ padding:clamp(17px,2vw,27px);border:1px solid #ffa7d7ba;border-radius:19px;
+ box-shadow:0 19px 40px #18071d75}
+.moment-script p{font-size:clamp(1rem,1.6vw,1.22rem);line-height:1.6;margin:8px 0 0}
+.moment-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:17px 0}
+.moment-actions .btn{padding:17px 15px;min-height:78px;background:linear-gradient(110deg,#4c2344e8,#32203ed9);
+ border-color:#ffa1cc7f;text-align:center}
+.moment-actions .btn:hover{background:linear-gradient(110deg,#8b3568e8,#4d296cde)}
+.moment-finish{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:16px 0 0}
+.moment-finish .btn{min-width:190px}
+.moment-link{font-weight:700;background:#612749b8;border:1px solid #ffb4d5ad;border-radius:13px;
+ padding:11px 17px;color:white}
+@media(max-width:800px){
+ .moment-scene{min-height:560px}.moment-stage{display:block;min-height:560px;padding:85px 18px 0}
+ .moment-copy{position:absolute;top:86px;left:20px;right:20px;padding:0;max-width:410px}
+ .moment-copy h1{font-size:clamp(2.5rem,9vw,3.7rem)}
+ .moment-characters{position:absolute;bottom:0;right:0;width:75%;opacity:.62;z-index:1}
+ .moment-characters .avatar-art{width:42%}.moment-characters .portrait{width:48%}
+ .moment-script{margin:-10px 10px 0}.moment-actions{grid-template-columns:1fr}
+ .moment-actions .btn{min-height:55px;text-align:left}
+}
